@@ -17,6 +17,21 @@ alwaysApply: true
 | [📊 quality.mdc](quality.mdc)           | 品質基準・チェックリスト / Quality standards & checklist              | 全体 / All               | 高 / High                   |
 | [📁 test-outputs.mdc](test-outputs.mdc) | テスト出力物管理・クリーンアップ / Test output management & cleanup   | 運用 / Operations        | 中 / Medium                 |
 
+## ルール記述方針 / Rule Writing Policy
+
+### 日本語・英語併記（必須） / Japanese-English Bilingual (Required)
+- ✅ すべてのルールは日本語と英語の両方で記述 / All rules must be written in both Japanese and English
+- ✅ 形式: `日本語 / English` / Format: `Japanese / English`
+- ✅ LLMの理解精度向上のため / To improve LLM understanding accuracy
+- ✅ 国際的な開発チームでの利用を考慮 / Consideration for international development teams
+
+### 記述例 / Writing Example
+```markdown
+## セレクター戦略 / Selector Strategy
+### 優先度（必須遵守） / Priority (Must Follow)
+**理由 / Reason**: アクセシビリティ・セマンティクス重視 / Focus on accessibility and semantics
+```
+
 ## ルール管理方針 / Rule Management Policy
 
 ### 1次情報源の原則 / Primary Source Principle
@@ -31,7 +46,7 @@ alwaysApply: true
 
 ### 参照方法 / Reference Method
 ```markdown
-詳細は [ selectors.mdc](.cursor/rules/selectors.mdc) を参照
+詳細は [🎯 selectors.mdc](.cursor/rules/selectors.mdc) を参照
 For details, refer to [🎯 selectors.mdc](.cursor/rules/selectors.mdc)
 ```
 
