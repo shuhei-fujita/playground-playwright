@@ -25,13 +25,15 @@ npm install && cp .env.example .env && npx playwright install && npm test
 ## 🧹 出力物管理
 
 ```bash
-npm run clean          # 出力ファイルクリーンアップ
-npm run check:outputs  # 出力サイズ確認
-npm run update:vrt     # VRTベースライン更新
-npm run help           # 全コマンド説明表示
+yarn clean          # 出力ファイルクリーンアップ
+yarn update:vrt     # VRTベースライン更新
+yarn test:all       # 全ブラウザでテスト実行
+yarn test:ui        # UIモードでテスト実行
+yarn report         # テストレポート表示
+yarn typecheck      # TypeScript型チェック
 ```
 
-> **詳細**: [📁 test-outputs.mdc](.cursor/rules/test-outputs.mdc)、[scripts/README.md](scripts/README.md) を参照
+> **詳細**: [📁 test-outputs.mdc](.cursor/rules/test-outputs.mdc) を参照
 
 ## 📚 開発情報
 
