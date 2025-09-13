@@ -1,0 +1,263 @@
+---
+description: Test output management rules / テスト出力物管理ルール
+globs:
+alwaysApply: false
+---
+
+# テスト出力物管理ルール
+
+## 🚀 基本コマンド（Playwright公式推奨）
+
+```bash
+npm test               # Chromiumのみ（高速開発用）
+npm run test:all       # 全ブラウザ（リリース前検証）
+npm run test:ui        # UIモード（デバッグ用）
+npm run report         # 結果確認
+npm run clean          # クリーンアップ
+npm run typecheck      # 型チェック
+```
+
+### 直接実行（公式コマンド活用）
+```bash
+npx playwright test --headed    # ブラウザ表示
+npx playwright test --debug     # デバッグ実行
+du -sh test-results/ playwright-report/  # サイズ確認
+```
+
+## 📁 出力ディレクトリ（Playwright公式デフォルト）
+
+### 🔄 **テスト実行結果**
+```
+test-results/          # Playwright公式デフォルト
+├── screenshots/       # 失敗時スクリーンショット
+├── videos/           # 実行録画
+├── traces/           # トレースファイル
+└── *-actual.png      # VRT実際画像
+```
+
+### 📊 **HTMLレポート**
+```
+playwright-report/     # Playwright公式デフォルト
+└── index.html
+```
+
+### 📸 **ベースライン画像（永続管理）**
+```
+tests/*-snapshots/     # VRTベースライン画像
+├── VRT-1-chromium-darwin.png
+├── VRT-1-webkit-darwin.png
+└── VRT-1-firefox-darwin.png
+```
+**管理方針**: Git管理・チーム共有・慎重な更新
+
+## 🗂️ .gitignore 設定（必須）
+
+### 除外すべきファイル
+```gitignore
+# テスト結果（一時的）
+/test-results/
+/playwright-report/
+/blob-report/
+
+# Playwright内部ファイル
+/playwright/.cache/
+/playwright/.auth/
+
+# ログファイル
+*.log
+yarn-error.log
+
+# 環境設定
+*.env*
+!.env.example
+
+# 一時ファイル
+*.tmp
+*.temp
+```
+
+### **含めるべきファイル**
+```gitignore
+# VRTベースライン画像は含める
+!tests/*-snapshots/*.png
+```
+
+## 🧹 クリーンアップ戦略
+
+### **自動クリーンアップ（推奨）**
+```json
+// package.json
+{
+  "scripts": {
+    "test": "playwright test",
+    "test:clean": "npm run clean && npm run test",
+    "clean": "npm run clean:results && npm run clean:reports",
+    "clean:results": "rm -rf test-results",
+    "clean:reports": "rm -rf playwright-report blob-report",
+    "clean:old": "find test-results -name '*.png' -mtime +7 -delete"
+  }
+}
+```
+
+### **手動クリーンアップ**
+```bash
+# 基本クリーンアップ
+npm run clean
+
+# 古いファイルのみ削除（7日以上前）
+npm run clean:old
+
+# 完全クリーンアップ（注意：VRTベースラインは残す）
+rm -rf test-results playwright-report
+```
+
+## 📤 CI/CD での管理
+
+### **保存すべき成果物**
+- ✅ HTMLレポート (`playwright-report/`)
+- ✅ 失敗時のスクリーンショット・動画
+- ✅ 新しいVRTベースライン画像（承認後）
+
+### **GitHub Actions例**
+```yaml
+- name: Run Playwright tests
+  run: npx playwright test
+
+- name: Upload test results
+  uses: actions/upload-artifact@v3
+  if: always()
+  with:
+    name: playwright-report
+    path: |
+      playwright-report/
+      test-results/
+    retention-days: 30
+```
+
+## 🎯 VRT（Visual Regression Testing）管理
+
+### **ベースライン画像の更新**
+```bash
+# 意図的な変更時のみ実行
+npx playwright test --update-snapshots
+
+# 特定テストのみ更新
+npx playwright test tests/VRT.spec.ts --update-snapshots
+```
+
+### **VRT失敗時の対応フロー**
+1. **差分確認**: `test-results/*-diff.png` で変更内容確認
+2. **原因調査**: 意図的変更 vs バグによる変更
+3. **承認**: 意図的変更なら `--update-snapshots` で更新
+4. **修正**: バグなら該当コードを修正
+
+## 📊 容量管理
+
+### **監視すべきディレクトリ**
+```bash
+# 定期的にサイズチェック
+du -sh test-results/ playwright-report/
+
+# 肥大化の警告ライン
+# test-results: 50MB以上
+# playwright-report: 10MB以上
+```
+
+### **容量削減策**
+```bash
+# 動画品質調整（playwright.config.ts）
+recordVideo: {
+  mode: 'retain-on-failure',
+  size: { width: 1280, height: 720 }  // 解像度下げる
+}
+
+# スクリーンショット設定
+screenshot: 'only-on-failure'  # 失敗時のみ
+```
+
+## 🤝 チーム共有の原則
+
+### **共有すべきもの**
+- ✅ VRTベースライン画像（tests/*-snapshots/）
+- ✅ 設定ファイル（playwright.config.ts）
+- ✅ テストコード
+
+### **共有不要**
+- ❌ ローカル実行結果（test-results/）
+- ❌ HTMLレポート（playwright-report/）
+- ❌ 一時的なスクリーンショット・動画
+
+### **失敗時の共有方法**
+```bash
+# CI/CDでの失敗時
+# → GitHub ActionsのArtifactsで共有
+
+# ローカルでの再現困難な失敗
+# → test-results/ を zip で共有
+zip -r debug-results.zip test-results/
+```
+
+## ⚙️ 設定最適化
+
+### **playwright.config.ts 推奨設定**
+```typescript
+export default defineConfig({
+  use: {
+    // 失敗時のみ記録（容量節約）
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+    trace: 'on-first-retry',
+  },
+  
+  // 出力ディレクトリの整理
+  outputDir: 'test-results',
+  
+  // レポート設定
+  reporter: [
+    ['html', { outputFolder: 'playwright-report' }],
+    ['json', { outputFile: 'test-results/results.json' }]
+  ]
+});
+```
+
+## 🚨 トラブルシューティング
+
+### **よくある問題**
+
+1. **容量不足**
+   ```bash
+   # 原因: test-results/ の肥大化
+   # 対策: 定期的なクリーンアップ
+   npm run clean:old
+   ```
+
+2. **VRT差分エラー**
+   ```bash
+   # 原因: 意図しない画面変更
+   # 対策: 差分画像で変更内容確認
+   open test-results/*/VRT-1-diff.png
+   ```
+
+3. **CI/CDでの成果物紛失**
+   ```yaml
+   # 原因: retention-days 設定不備
+   # 対策: 適切な保持期間設定
+   retention-days: 30  # 30日間保持
+   ```
+
+## 📋 チェックリスト
+
+### **開発時**
+- [ ] テスト前に `npm run clean` でクリーンアップ
+- [ ] VRT変更時は差分を必ず確認
+- [ ] 大量の失敗ファイルが残っていないかチェック
+
+### **CI/CD設定時**
+- [ ] HTMLレポートの成果物保存設定
+- [ ] 適切な保持期間設定（30日推奨）
+- [ ] VRTベースライン画像の自動更新防止
+
+### **定期メンテナンス（週次）**
+- [ ] test-results/ サイズチェック
+- [ ] 古いファイルのクリーンアップ  
+- [ ] .gitignore 設定の見直し

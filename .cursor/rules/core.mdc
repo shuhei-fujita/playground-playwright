@@ -1,0 +1,57 @@
+---
+description: Core Playwright TypeScript rules / 基本ルール
+globs:
+alwaysApply: true
+---
+
+# Playwright TypeScript E2Eテスト - 基本ルール
+
+## プロジェクト概要
+
+### 目的
+- Webアプリケーションの品質向上とバグ検出
+- 継続的インテグレーション（CI）における自動テストの実行
+- Page Object Modelパターンによる保守性の高いテストコードの実現
+
+### 技術スタック
+- **Playwright**: v1.46.0 - E2Eテスト自動化
+- **TypeScript**: 型安全なJavaScript実行環境
+- **Node.js**: JavaScript実行環境
+
+### 特徴
+- TypeScriptによる型安全なテストコード
+- Chromium、Firefox、WebKit対応のクロスブラウザテスト
+- 日本語でのテストケース記述に対応
+- Visual Regression Testing (VRT) サポート
+- HTMLレポートによる結果可視化
+
+## 関連ルール参照
+
+詳細なルールは以下を参照：
+
+- **セキュリティ**: → [security.mdc](security.mdc)
+- **セレクター戦略**: → [selectors.mdc](selectors.mdc)  
+- **アーキテクチャ**: → [architecture.mdc](architecture.mdc)
+- **品質基準**: → [quality.mdc](quality.mdc)
+
+## パフォーマンス設定
+
+### 並行実行
+```typescript
+export default defineConfig({
+  fullyParallel: true,
+  workers: process.env.CI ? 1 : undefined,
+});
+```
+
+### エラーハンドリング
+```typescript
+export default defineConfig({
+  retries: process.env.CI ? 2 : 0,
+  use: {
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+  },
+});
+```

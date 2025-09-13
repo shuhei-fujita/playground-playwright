@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Playwright Test Results (公式デフォルト設定)
+/test-results/
+/playwright-report/
+/blob-report/
+
+# Playwright Internal Files
+/playwright/.cache/
+/playwright/.auth/
+
+# Environment Variables (機密情報)
+*.env*
+!.env.example
+
+# Log Files
+*.log
+yarn-error.log
+
+# Package Lock Files (プロジェクトによって選択)
+yarn.lock
+package-lock.json
+
+# Temporary Files
+*.tmp
+*.temp
+*.bak
+
+# IDE/Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# 【重要】VRTベースライン画像は含める
+# tests/*-snapshots/*.png は Git 管理対象
+
+# プロジェクトルートに誤って生成されるスクリーンショット
+screenshot*.png

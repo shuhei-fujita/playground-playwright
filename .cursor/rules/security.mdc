@@ -1,0 +1,30 @@
+---
+description: Security rules for Playwright tests / セキュリティルール
+globs:
+alwaysApply: true
+---
+
+# セキュリティルール
+
+## 🔒 認証情報管理
+
+### 環境変数による管理（必須）
+- ✅ パスワード・APIキー等は必ず`.env`で管理
+- ✅ `.gitignore`でgit管理から除外
+- ✅ `.env.example`でテンプレート提供
+
+### ハードコーディング禁止（必須）
+```typescript
+// ❌ 禁止例
+await page.fill("#password", "mypassword123");
+const apiKey = "sk-1234567890abcdef";
+
+// ✅ 推奨例  
+await page.fill("#password", process.env.PASSWORD || "");
+const apiKey = process.env.API_KEY;
+```
+
+### コード内での機密情報保護
+- ✅ ログ出力時のマスキング: `email.replace(/@.+/, "@***")`
+- ✅ コメント内での機密情報記載禁止
+- ✅ テスト失敗時のスクリーンショットでの機密情報配慮

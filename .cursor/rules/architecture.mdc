@@ -1,0 +1,48 @@
+---
+description: Architecture rules for Playwright tests / アーキテクチャルール
+globs:
+alwaysApply: false
+---
+
+# アーキテクチャルール
+
+## Page Object Model（必須）
+
+### 基本構造
+```typescript
+export class PageName extends BasePage {
+  readonly elementName: Locator;
+  
+  constructor(page: Page) {
+    super(page);
+    this.elementName = this.getByRoleSafe('button', { name: 'Submit' });
+  }
+  
+  async actionMethod(): Promise<void> {
+    // 実装
+  }
+}
+```
+
+### ディレクトリ構成（必須）
+```
+tests/
+├── pages/           # Page Objectクラス
+│   ├── BasePage.ts  # 基底クラス
+│   └── *.page.ts    # 各ページのPage Object
+├── fixtures/        # テストフィクスチャ
+├── utils/          # ユーティリティ
+├── data/           # テストデータ
+└── *.spec.ts       # テストファイル
+```
+
+## 命名規則
+
+### ファイル命名
+- テストファイル: `*.spec.ts`
+- Page Object: `*Page.ts`
+- ユーティリティ: `*.util.ts`
+
+### テスト命名
+- 日本語推奨: `test('ユーザーがログインできること', ...)`
+- 動作ベース: 「〜ができること」「〜が表示されること」

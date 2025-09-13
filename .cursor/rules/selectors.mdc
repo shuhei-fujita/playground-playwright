@@ -1,0 +1,58 @@
+---
+description: Selector strategy rules for Playwright / セレクター戦略ルール
+globs:
+alwaysApply: false
+---
+
+# セレクター戦略
+
+## 優先度（必須遵守）
+
+### 1. Role-based Selectors（最優先）
+```typescript
+await page.getByRole('button', { name: 'ログイン' });
+await page.getByRole('textbox', { name: 'メールアドレス' });
+```
+**理由**: アクセシビリティ・セマンティクス重視
+
+### 2. Label-based Selectors
+```typescript
+await page.getByLabel('パスワード');
+await page.getByPlaceholder('名前を入力');
+```
+**理由**: ユーザー視点でのテスト
+
+### 3. Text-based Selectors
+```typescript
+await page.getByText('保存');
+await page.getByText('エラーが発生しました');
+```
+**理由**: 直感的な選択
+
+### 4. Test ID Selectors（data-testid）
+```typescript
+await page.getByTestId('submit-button');
+```
+**理由**: テストとスタイルの完全分離
+
+### 5. CSS Selectors（最終手段）
+```typescript
+// 使用時は必ずコメントで理由を明記
+// 【外部サイトの制約により最終手段として使用】
+await page.locator('#username');
+```
+
+## アンチパターン（禁止）
+
+### ID/Class依存
+```typescript
+// ❌ 禁止例
+await page.locator('#login-form');
+await page.locator('.btn-primary');
+
+// 理由: スタイル変更でテスト破綻
+```
+
+## 参考資料
+- [Making your UI tests resilient to change - Kent C. Dodds](https://kentcdodds.com/blog/making-your-ui-tests-resilient-to-change)
+- [idやclassを使ってテストを書くのは、もはやアンチパターンである](https://qiita.com/akameco/items/519f7e4d5442b2a9d2da)

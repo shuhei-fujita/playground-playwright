@@ -1,0 +1,20 @@
+{
+  "name": "playwright-typescript-framework",
+  "version": "1.0.0",
+  "description": "High-quality Playwright TypeScript E2E testing framework",
+  "scripts": {
+    "test": "playwright test --project=chromium",
+    "test:all": "playwright test",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report",
+    "clean": "rm -rf test-results playwright-report blob-report",
+    "update:vrt": "playwright test --update-snapshots",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.42.1",
+    "@types/node": "^20.11.24",
+    "typescript": "^5.3.3",
+    "dotenv": "^16.0.0"
+  }
+}
