@@ -4,11 +4,11 @@ globs:
 alwaysApply: false
 ---
 
-# アーキテクチャルール
+# アーキテクチャルール / Architecture Rules
 
-## Page Object Model（必須）
+## Page Object Model（必須） / Page Object Model (Required)
 
-### 基本構造
+### 基本構造 / Basic Structure
 ```typescript
 export class PageName extends BasePage {
   readonly elementName: Locator;
@@ -19,28 +19,33 @@ export class PageName extends BasePage {
   }
   
   async actionMethod(): Promise<void> {
-    // 実装
+    // 実装 / Implementation
   }
 }
 ```
 
-### ディレクトリ構成（必須）
+### ディレクトリ構成（必須） / Directory Structure (Required)
 ```
 tests/
-├── pages/           # Page Objectクラス
-│   ├── BasePage.ts  # 基底クラス
-│   └── *.page.ts    # 各ページのPage Object
-├── fixtures/        # テストフィクスチャ
-├── utils/          # ユーティリティ
-├── data/           # テストデータ
-└── *.spec.ts       # テストファイル
+├── pages/           # Page Objectクラス / Page Object classes
+│   ├── BasePage.ts  # 基底クラス / Base class
+│   └── *.page.ts    # 各ページのPage Object / Page Object for each page
+├── fixtures/        # テストフィクスチャ / Test fixtures
+├── utils/          # ユーティリティ / Utilities
+├── data/           # テストデータ / Test data
+└── *.spec.ts       # テストファイル / Test files
 ```
 
-## 命名規則
+## 命名規則 / Naming Conventions
 
-### ファイル命名
-- テストファイル: `*.spec.ts`
+### ファイル命名 / File Naming
+- テストファイル: `*.spec.ts` / Test files: `*.spec.ts`
 - Page Object: `*Page.ts`
+- ユーティリティ: `*.util.ts` / Utilities: `*.util.ts`
+
+### テスト命名 / Test Naming
+- 日本語推奨: `test('ユーザーがログインできること', ...)` / Japanese recommended: `test('ユーザーがログインできること', ...)`
+- 動作ベース: 「〜ができること」「〜が表示されること」 / Action-based: "〜ができること" "〜が表示されること"
 - ユーティリティ: `*.util.ts`
 
 ### テスト命名

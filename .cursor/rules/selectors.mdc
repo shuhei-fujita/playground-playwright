@@ -1,8 +1,3 @@
----
-description: Selector strategy rules for Playwright / セレクター戦略ルール
-globs:
-alwaysApply: false
----
 
 # セレクター戦略
 
@@ -51,6 +46,11 @@ await page.locator('#login-form');
 await page.locator('.btn-primary');
 
 // 理由: スタイル変更でテスト破綻
+```
+
+## 参考資料
+- [Making your UI tests resilient to change - Kent C. Dodds](https://kentcdodds.com/blog/making-your-ui-tests-resilient-to-change)
+- [idやclassを使ってテストを書くのは、もはやアンチパターンである](https://qiita.com/akameco/items/519f7e4d5442b2a9d2da)
 ```
 
 ## 参考資料
