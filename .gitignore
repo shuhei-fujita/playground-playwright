@@ -42,3 +42,5 @@ Thumbs.db
 
 # プロジェクトルートに誤って生成されるスクリーンショット
 screenshot*.png
+
+*.webm
