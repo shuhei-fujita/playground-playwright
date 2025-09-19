@@ -1,6 +1,6 @@
 import { test, expect, chromium } from "@playwright/test";
 
-test("VRT", async ({}) => {
+test("ブラウザを閉じた状態でのVRTテスト", async ({}) => {
   const browser = await chromium.launch();
   // 新しいブラウザコンテキストを作成
   const context = await browser.newContext();

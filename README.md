@@ -22,15 +22,28 @@
 npm install && cp .env.example .env && npx playwright install && npm test
 ```
 
-## 🧹 出力物管理
+## 🔧 開発コマンド（MECE分類）
 
+### 1️⃣ **テスト実行 (Test Execution)**
 ```bash
-yarn clean          # 出力ファイルクリーンアップ
-yarn update:vrt     # VRTベースライン更新
-yarn test:all       # 全ブラウザでテスト実行
-yarn test:ui        # UIモードでテスト実行
-yarn report         # テストレポート表示
-yarn typecheck      # TypeScript型チェック
+npm test            # Chromium単体（高速開発用）
+npm run test:all    # 全ブラウザ（リリース前検証）
+npm run test:ui     # UIモード（デバッグ用）
+```
+
+### 2️⃣ **品質管理 (Quality Management)**
+```bash
+npm run quality-check   # MECE品質チェック実行
+npm run quality-fix     # 品質チェック + 型チェック
+npm run pre-commit      # コミット前チェック（品質+型+テスト）
+npm run typecheck       # TypeScript型チェック
+```
+
+### 3️⃣ **出力物管理 (Output Management)**
+```bash
+npm run clean           # 出力ファイルクリーンアップ
+npm run update:vrt      # VRTベースライン更新
+npm run report          # テストレポート表示
 ```
 
 > **詳細**: [📁 test-outputs.mdc](.cursor/rules/test-outputs.mdc) を参照

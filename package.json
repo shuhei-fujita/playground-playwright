@@ -9,12 +9,16 @@
     "report": "playwright show-report",
     "clean": "rm -rf test-results playwright-report blob-report",
     "update:vrt": "playwright test --update-snapshots",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "quality-check": "node scripts/quality-check.js",
+    "quality-fix": "npm run quality-check && npm run typecheck",
+    "pre-commit": "npm run quality-check && npm run typecheck && npm run test"
   },
   "devDependencies": {
     "@playwright/test": "^1.42.1",
     "@types/node": "^20.11.24",
     "typescript": "^5.3.3",
-    "dotenv": "^16.0.0"
+    "dotenv": "^16.0.0",
+    "glob": "^10.3.10"
   }
 }

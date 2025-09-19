@@ -1,58 +1,62 @@
 
-# セレクター戦略
+---
+description: Selector strategy rules for Playwright / セレクター戦略ルール
+globs:
+alwaysApply: false
+---
 
-## 優先度（必須遵守）
+# セレクター戦略 / Selector Strategy
 
-### 1. Role-based Selectors（最優先）
+## 優先度（必須遵守） / Priority (Must Follow)
+
+### 1. Role-based Selectors（最優先） / Role-based Selectors (Highest Priority)
 ```typescript
 await page.getByRole('button', { name: 'ログイン' });
 await page.getByRole('textbox', { name: 'メールアドレス' });
 ```
-**理由**: アクセシビリティ・セマンティクス重視
+**理由 / Reason**: アクセシビリティ・セマンティクス重視 / Focus on accessibility and semantics
 
 ### 2. Label-based Selectors
 ```typescript
 await page.getByLabel('パスワード');
 await page.getByPlaceholder('名前を入力');
 ```
-**理由**: ユーザー視点でのテスト
+**理由 / Reason**: ユーザー視点でのテスト / Testing from user perspective
 
 ### 3. Text-based Selectors
 ```typescript
 await page.getByText('保存');
 await page.getByText('エラーが発生しました');
 ```
-**理由**: 直感的な選択
+**理由 / Reason**: 直感的な選択 / Intuitive selection
 
 ### 4. Test ID Selectors（data-testid）
 ```typescript
 await page.getByTestId('submit-button');
 ```
-**理由**: テストとスタイルの完全分離
+**理由 / Reason**: テストとスタイルの完全分離 / Complete separation of tests and styles
 
-### 5. CSS Selectors（最終手段）
+### 5. CSS Selectors（最終手段） / CSS Selectors (Last Resort)
 ```typescript
 // 使用時は必ずコメントで理由を明記
+// Always comment the reason when using
 // 【外部サイトの制約により最終手段として使用】
+// 【Used as last resort due to external site constraints】
 await page.locator('#username');
 ```
 
-## アンチパターン（禁止）
+## アンチパターン（禁止） / Anti-patterns (Prohibited)
 
-### ID/Class依存
+### ID/Class依存 / ID/Class Dependencies
 ```typescript
-// ❌ 禁止例
+// ❌ 禁止例 / Prohibited example
 await page.locator('#login-form');
 await page.locator('.btn-primary');
 
 // 理由: スタイル変更でテスト破綻
+// Reason: Tests break when styles change
 ```
 
-## 参考資料
-- [Making your UI tests resilient to change - Kent C. Dodds](https://kentcdodds.com/blog/making-your-ui-tests-resilient-to-change)
-- [idやclassを使ってテストを書くのは、もはやアンチパターンである](https://qiita.com/akameco/items/519f7e4d5442b2a9d2da)
-```
-
-## 参考資料
+## 参考資料 / References
 - [Making your UI tests resilient to change - Kent C. Dodds](https://kentcdodds.com/blog/making-your-ui-tests-resilient-to-change)
 - [idやclassを使ってテストを書くのは、もはやアンチパターンである](https://qiita.com/akameco/items/519f7e4d5442b2a9d2da)

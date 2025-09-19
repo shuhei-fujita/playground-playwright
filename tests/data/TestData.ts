@@ -4,22 +4,23 @@
  */
 
 // ユーザー関連のテストデータ
+// 【セキュリティ重要】パスワードは環境変数から取得するか、テスト用ダミー値として明示
 export const UserTestData = {
   validUser: {
     email: "valid.user@example.com",
-    password: "ValidPassword123!",
+    password: process.env.TEST_VALID_PASSWORD || "TEST_DUMMY_VALID_PASS", // テスト用ダミー値
     firstName: "田中",
     lastName: "太郎",
   },
   invalidUser: {
     email: "invalid.email",
-    password: "weak",
+    password: "TEST_DUMMY_WEAK_PASS", // テスト用ダミー値（意図的に弱いパスワード）
     firstName: "",
     lastName: "",
   },
   testUser: {
     email: "test.user@example.com",
-    password: "TestPassword456!",
+    password: process.env.TEST_USER_PASSWORD || "TEST_DUMMY_USER_PASS", // テスト用ダミー値
     firstName: "テスト",
     lastName: "ユーザー",
   },

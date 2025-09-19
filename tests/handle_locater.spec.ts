@@ -22,7 +22,7 @@ import { test, expect } from "@playwright/test";
 
 // getByRole
 // ある要素がボタンなのかチェックボックスなのかなど、ユーザや支援技術がページをどのように認識
-test("getByRole", async ({ page }) => {
+test("Role-basedセレクターでボタンを取得できること", async ({ page }) => {
   await page.setContent(`
     <button>Click me</button>
   `);
@@ -34,7 +34,7 @@ test("getByRole", async ({ page }) => {
 // getByText
 // その要素が含むテキストで検索します
 // 部分文字列、完全な文字列、正規表現でマッチさせることができます
-test("getByText", async ({ page }) => {
+test("Text-basedセレクターで要素を取得できること", async ({ page }) => {
   await page.setContent(`
     <button>Click me</button>
   `);
@@ -44,7 +44,9 @@ test("getByText", async ({ page }) => {
 });
 
 // getByLabel
-test("getByLabel", async ({ page }) => {
+test("Label-basedセレクターで入力フィールドを取得できること", async ({
+  page,
+}) => {
   await page.setContent(`
     <label for="username">User Name</label>
     <input id="username" />

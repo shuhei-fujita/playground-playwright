@@ -3,7 +3,7 @@ const fs = require("fs");
 
 // 認証済み状態をロードするために
 test.describe("PlaywrightのAuthenticationのサンプルテスト", async () => {
-  test("test 1", async () => {
+  test("基本的なテストが実行できること", async () => {
     // 認証済み状態をlogで確認したい
     const authState = JSON.parse(
       fs.readFileSync("playwright/.auth/user.json", "utf8")
