@@ -241,8 +241,11 @@ class MECEQualityChecker {
       'tests/**/*.ts',
       'tests/**/*.spec.ts',
       '!node_modules/**',
-      '!test-results/**'
+      '!test-results/**',
+      '!tests/archive/**'  // アーカイブフォルダを除外
     ];
+    
+    console.log('🗂️ アーカイブフォルダ (tests/archive/) は品質チェック対象外です');
 
     let allFiles = [];
     for (const pattern of tsFiles) {
@@ -250,8 +253,9 @@ class MECEQualityChecker {
       allFiles.push(...files);
     }
 
-    // 重複除去
+    // 重複除去とアーカイブフォルダの除外
     allFiles = [...new Set(allFiles)];
+    allFiles = allFiles.filter(file => !file.includes('tests/archive/'));
 
     console.log(`📁 チェック対象ファイル数: ${allFiles.length}\n`);
 
