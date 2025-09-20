@@ -1,0 +1,288 @@
+---
+description: Test structure rules for Playwright / テスト構造ルール
+globs:
+alwaysApply: true
+---
+
+# テスト構造ルール / Test Structure Rules
+
+## Given-When-Then パターン（推奨） / Given-When-Then Pattern (Recommended)
+
+### 基本構造 / Basic Structure
+```typescript
+test("テスト名", async ({ page }) => {
+  try {
+    // === GIVEN: テスト前提条件の設定 ===
+    // 初期状態の準備、ページ移動、認証等
+    
+    // === WHEN: テスト対象の操作実行 ===
+    // 実際にテストしたい操作・機能の実行
+    
+    // === THEN: 期待結果の検証 ===
+    // アサーションによる結果検証
+    
+  } catch (error) {
+    // エラーハンドリング
+  }
+});
+```
+
+### 実装例 / Implementation Example
+```typescript
+test("ユーザーがログインできること", async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  
+  try {
+    // === GIVEN: 前提条件 ===
+    await loginPage.navigate();
+    await expect(page).toHaveURL(/login/);
+    
+    // === WHEN: 操作実行 ===
+    await loginPage.login(email, password);
+    
+    // === THEN: 結果検証 ===
+    await expect(page).toHaveURL(/dashboard/);
+    await expect(page.getByText("ようこそ")).toBeVisible();
+  } catch (error) {
+    await loginPage.handleError(`ログインテストでエラー: ${error}`);
+    throw error;
+  }
+});
+```
+
+## アサーション戦略 / Assertion Strategy
+
+### 基本方針 / Basic Policy
+- **1つのテストにつき1つの主要アサーション** / One primary assertion per test
+- **補助的なアサーションは許容** / Supporting assertions are acceptable
+- **過度なアサーションは避ける** / Avoid excessive assertions
+- **アサーション数上限: 5個** / Maximum 5 assertions per test
+
+### 🎯 **重要な洞察: テスト名とアサーション数の関係** / Key Insight: Test Name and Assertion Count Relationship
+
+#### ❌ **曖昧なテスト名 → 複数アサーション**
+```typescript
+// 問題例: 曖昧なテスト名
+test("機能が正常に動作すること", async ({ page }) => {
+  // 複数の検証が混在してしまう
+  await expect(page).toHaveTitle(/Expected/);      // タイトル検証
+  await expect(page).toHaveURL(/expected-url/);    // URL検証
+  await expect(page.locator("button")).toBeVisible(); // 要素検証
+  await expect(page.locator("form")).toBeEnabled();   // 状態検証
+  // → 4つのアサーション（テストの焦点が不明確）
+});
+```
+
+#### ✅ **具体的なテスト名 → 単一アサーション**
+```typescript
+// 改善例: 具体的なテスト名
+test("ページタイトルが正しく表示されること", async ({ page }) => {
+  // GIVEN
+  await page.goto("/");
+  
+  // WHEN
+  const title = await page.title();
+  
+  // THEN (主要アサーション1つ)
+  await expect(page).toHaveTitle(/Expected/);
+});
+
+test("ログインボタンが表示されること", async ({ page }) => {
+  // GIVEN
+  await page.goto("/login");
+  
+  // WHEN
+  const loginButton = page.locator("button");
+  
+  // THEN (主要アサーション1つ)
+  await expect(loginButton).toBeVisible();
+});
+```
+
+### 推奨パターン / Recommended Patterns
+
+#### ✅ 良い例 / Good Examples
+```typescript
+// 単一の主要アサーション + 補助的確認
+test("ページタイトルが正しく表示されること", async ({ page }) => {
+  // GIVEN
+  await page.goto("/");
+  
+  // WHEN
+  const title = await page.title();
+  
+  // THEN (主要アサーション)
+  await expect(page).toHaveTitle(/Playwright/);
+  
+  // 補助的アサーション（状態確認）
+  await expect(page.locator("main")).toBeVisible();
+});
+```
+
+#### ❌ 避けるべき例 / Examples to Avoid
+```typescript
+// 複数の主要アサーションが混在（テストの焦点が不明確）
+test("複数の機能をまとめてテスト", async ({ page }) => {
+  await page.goto("/");
+  await expect(page).toHaveTitle(/Playwright/);  // タイトル検証
+  
+  await page.click("button");
+  await expect(page.locator(".modal")).toBeVisible();  // モーダル表示検証
+  
+  await page.fill("input", "test");
+  await expect(page.locator("input")).toHaveValue("test");  // 入力検証
+  
+  // 複数の異なる機能を1つのテストで検証（分割すべき）
+});
+```
+
+### アサーション種類別ガイドライン / Guidelines by Assertion Type
+
+#### 🎯 **主要アサーション** / Primary Assertions
+- テストの核となる検証
+- 1つのテストにつき1つが理想
+- 失敗時にテストの目的が明確
+
+#### 🛡️ **補助的アサーション** / Supporting Assertions
+- 前提条件の確認（GIVEN段階）
+- 状態の安定性確認
+- 2-3個程度が適切
+
+#### 📊 **状態確認アサーション** / State Verification Assertions
+```typescript
+// 前提条件確認（GIVEN）
+await expect(page).toHaveURL(/expected-url/);
+await expect(page.locator("main")).toBeVisible();
+
+// 主要検証（THEN）
+await expect(page.getByText("成功メッセージ")).toBeVisible();
+
+// 副次的確認（THEN）
+const currentUrl = page.url();
+expect(currentUrl).toContain("success");
+```
+
+## テスト分割の指針 / Test Splitting Guidelines
+
+### 分割すべきケース / Cases for Splitting
+1. **複数の独立した機能** / Multiple independent features
+2. **異なるユーザーシナリオ** / Different user scenarios  
+3. **異なる期待結果** / Different expected outcomes
+4. **テスト名で表現できない複雑さ** / Complexity beyond test name
+5. **アサーション数が5個を超える場合** / When assertions exceed 5 per test
+
+### 🔍 **テスト名設計の重要性** / Importance of Test Name Design
+
+#### 📏 **テスト名の具体性とアサーション数の相関関係**
+- **曖昧なテスト名** → 複数の責任 → 多数のアサーション
+- **具体的なテスト名** → 単一の責任 → 最小限のアサーション
+
+#### 🎯 **良いテスト名の特徴**
+1. **動詞 + 目的語**: 「〜が〜できること」「〜が〜されること」
+2. **検証対象の明確化**: 何を検証するかが一目瞭然
+3. **期待結果の明示**: 成功条件が明確
+4. **単一責任**: 1つの機能・状態のみを表現
+
+#### 📝 **テスト名の改善例**
+```typescript
+// ❌ 曖昧（複数の責任）
+test("ログイン機能が動作すること", async ({ page }) => {
+  // ログイン + リダイレクト + 要素表示 → 複数アサーション
+});
+
+// ✅ 具体的（単一責任）
+test("有効な認証情報でログインできること", async ({ page }) => {
+  // ログイン成功のみ → 1つの主要アサーション
+});
+
+test("ログイン後にダッシュボードページに遷移すること", async ({ page }) => {
+  // URL遷移のみ → 1つの主要アサーション
+});
+
+test("ダッシュボードにユーザー名が表示されること", async ({ page }) => {
+  // 要素表示のみ → 1つの主要アサーション
+});
+```
+
+### 例：適切な分割 / Example: Proper Splitting
+```typescript
+// ❌ 1つのテストで複数機能
+test("ログインとプロフィール編集ができること", async ({ page }) => {
+  // ログイン + プロフィール編集（2つの機能が混在）
+});
+
+// ✅ 機能別に分割
+test("ユーザーがログインできること", async ({ page }) => {
+  // ログイン機能のみに集中
+});
+
+test("ログイン後にプロフィールを編集できること", async ({ page }) => {
+  // プロフィール編集機能のみに集中
+});
+```
+
+## ベストプラクティス / Best Practices
+
+### 🎯 **テスト設計原則** / Test Design Principles
+1. **Single Responsibility**: 1つのテストは1つの責任
+2. **Clear Intent**: テスト名で期待結果が明確
+3. **Independent**: テスト間の依存関係を排除
+4. **Repeatable**: 何度実行しても同じ結果
+
+### 📝 **コメント戦略** / Comment Strategy
+- Given-When-Thenセクションを明確にマーク
+- 各段階の目的を簡潔に説明
+- 複雑な操作には「なぜ」の説明を追加
+
+### 🔄 **リファクタリング指針** / Refactoring Guidelines
+- 長いテストは機能別に分割
+- 重複するGIVEN部分はbeforeEachに移動
+- 共通のWHEN操作はPage Objectメソッドに抽象化
+
+## 品質チェック基準 / Quality Check Standards
+
+### 🚨 **自動検出される問題** / Automatically Detected Issues
+
+#### 📊 **アサーション数チェック**
+- **基準**: 1テストあたり5個以下
+- **理由**: 単一責任原則の遵守
+- **対策**: テスト分割による責任の明確化
+
+#### 📋 **Given-When-Then構造チェック**
+- **基準**: `=== GIVEN/WHEN/THEN ===` コメントの存在
+- **理由**: テスト意図の明確化
+- **対策**: 構造化コメントの追加
+
+#### 🔤 **日本語テスト名チェック**
+- **基準**: 80%以上の日本語使用率
+- **理由**: 可読性・理解しやすさの向上
+- **対策**: 英語テスト名の日本語化
+
+### 💡 **テスト設計の原則** / Test Design Principles
+
+#### 🎯 **Single Responsibility Principle (単一責任原則)**
+```typescript
+// ✅ 良い例: 1つのテストは1つの責任
+test("ユーザーがログインできること", async ({ page }) => {
+  // ログイン機能のみをテスト
+});
+
+test("ログイン後にダッシュボードに遷移すること", async ({ page }) => {
+  // ページ遷移のみをテスト  
+});
+```
+
+#### 🔍 **Clear Intent (明確な意図)**
+- テスト名で期待結果が分かる
+- Given-When-Thenで処理の流れが明確
+- アサーションで検証内容が明確
+
+#### 🔄 **Independent (独立性)**
+- テスト間の依存関係を排除
+- 任意の順序で実行可能
+- 並列実行に対応
+
+#### 🔁 **Repeatable (再現性)**
+- 何度実行しても同じ結果
+- 外部要因に依存しない
+- データの初期化・クリーンアップを適切に実装

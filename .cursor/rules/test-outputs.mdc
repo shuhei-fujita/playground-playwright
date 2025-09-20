@@ -1,7 +1,7 @@
 ---
 description: Test output management rules / テスト出力物管理ルール
 globs:
-alwaysApply: false
+alwaysApply: true
 ---
 
 # テスト出力物管理ルール

@@ -1,7 +1,7 @@
 ---
 description: Quality standards and checklist / 品質基準とチェックリスト
 globs:
-alwaysApply: false
+alwaysApply: true
 ---
 
 # 品質基準

@@ -7,30 +7,64 @@ const glob = require('glob');
 /**
  * MECE品質チェックスクリプト
  * 
- * 【分類】
- * 1. 構造的品質 (Structural Quality)
- * 2. セキュリティ品質 (Security Quality) 
- * 3. 機能的品質 (Functional Quality)
- * 4. 保守性品質 (Maintainability Quality)
+ * 【なぜこのスクリプトが必要か】
+ * 1. 一貫性: 全開発者が同じ品質基準でコードを書くため
+ * 2. 効率性: 手動レビューでは見落としがちな問題を自動検出
+ * 3. 教育効果: 品質問題を指摘することで開発者のスキル向上
+ * 4. CI/CD統合: 継続的インテグレーションでの品質ゲート
+ * 
+ * 【MECE分類の理由】
+ * 1. 構造的品質 (Structural Quality) - アーキテクチャの一貫性
+ * 2. セキュリティ品質 (Security Quality) - 機密情報の安全性
+ * 3. 機能的品質 (Functional Quality) - テストの実行可能性・信頼性
+ * 4. 保守性品質 (Maintainability Quality) - 長期的な保守・拡張性
  */
 
 class MECEQualityChecker {
+  /**
+   * MECEQualityCheckerのコンストラクター
+   * 
+   * 【なぜこの状態管理構造にするか】
+   * 1. 分離された品質追跡: 各品質カテゴリを独立して測定・改善可能
+   * 2. 集計効率: passed/failed/issuesの構造化で高速なレポート生成
+   * 3. 拡張性: 新しい品質カテゴリを容易に追加できる設計
+   * 4. データ整合性: 一貫したデータ構造で実行時エラーを防止
+   */
   constructor() {
     this.results = {
+      // 構造的品質: アーキテクチャの一貫性を追跡
+      // 目的: Page Object Model、BasePage継承等の設計パターン遵守
       structural: { passed: 0, failed: 0, issues: [] },
+      
+      // セキュリティ品質: 機密情報の安全性を追跡  
+      // 目的: ハードコーディング防止、環境変数使用の徹底
       security: { passed: 0, failed: 0, issues: [] },
+      
+      // 機能的品質: テストの実行可能性・信頼性を追跡
+      // 目的: セレクター戦略、エラーハンドリングの適切な実装
       functional: { passed: 0, failed: 0, issues: [] },
+      
+      // 保守性品質: 長期的な保守・拡張性を追跡
+      // 目的: 日本語テスト名、説明コメントによる可読性向上
       maintainability: { passed: 0, failed: 0, issues: [] }
     };
   }
 
   /**
    * 1. 構造的品質チェック
+   * 
+   * 【なぜ構造的品質が重要か】
+   * 1. 保守性: 統一されたアーキテクチャで修正コストを削減
+   * 2. 学習コスト: 新規参加者が理解しやすいコード構造
+   * 3. バグ予防: 一貫したパターンでヒューマンエラーを防止
+   * 4. 拡張性: 新機能追加時の設計指針を明確化
    */
   checkStructuralQuality(filePath, content) {
     const issues = [];
 
-    // Page Object Model の使用
+    // Page Object Model の使用チェック
+    // 【実装方針】正規表現でimport文からPage Object使用を検出
+    // 【なぜ.spec.tsのみチェックか】テストファイルでのみPage Object使用が必須
     if (filePath.includes('.spec.ts')) {
       const hasPageObjectImport = /import.*from.*['"]\.\/.*(Page|page)['"]/i.test(content);
       if (!hasPageObjectImport) {
@@ -44,6 +78,8 @@ class MECEQualityChecker {
     }
 
     // BasePage継承の確認
+    // 【実装方針】extends キーワードでBasePage継承を検出
+    // 【なぜBasePage.ts除外か】基底クラス自体は継承不要
     if (filePath.includes('Page.ts') && !filePath.includes('BasePage.ts')) {
       const extendsBasePage = /extends\s+BasePage/i.test(content);
       if (!extendsBasePage) {
@@ -61,15 +97,23 @@ class MECEQualityChecker {
 
   /**
    * 2. セキュリティ品質チェック
+   * 
+   * 【なぜセキュリティ品質が最重要か】
+   * 1. 情報漏洩防止: 認証情報の適切な管理でセキュリティ事故を防ぐ
+   * 2. コンプライアンス: 企業のセキュリティポリシーへの準拠
+   * 3. 信頼性: 顧客・ステークホルダーからの信頼維持
+   * 4. 法的リスク: 個人情報保護法等の法的要件への対応
    */
   checkSecurityQuality(filePath, content) {
     const issues = [];
 
     // ハードコーディング検出（テスト用ダミー値を除外）
+    // 【実装方針】正規表現パターンマッチングで機密情報を検出
+    // 【なぜ複数パターンか】password、email、apikey等の様々な機密情報をカバー
     const hardcodedPatterns = [
-      /password\s*[=:]\s*['"][^'"]*['"]/gi,
-      /fill\(['"][^'"]*@[^'"]*\.(com|org)[^'"]*['"]\)/gi,
-      /apikey\s*[=:]\s*['"][^'"]*['"]/gi
+      /password\s*[=:]\s*['"][^'"]*['"]/gi,  // パスワードの直接代入
+      /fill\(['"][^'"]*@[^'"]*\.(com|org)[^'"]*['"]\)/gi,  // メールアドレスの直接入力
+      /apikey\s*[=:]\s*['"][^'"]*['"]/gi  // APIキーの直接代入
     ];
 
     hardcodedPatterns.forEach(pattern => {
@@ -111,13 +155,21 @@ class MECEQualityChecker {
 
   /**
    * 3. 機能的品質チェック
+   * 
+   * 【なぜ機能的品質が重要か】
+   * 1. テスト安定性: 適切なセレクター戦略でテストの脆弱性を削減
+   * 2. 実行信頼性: エラーハンドリングでテスト失敗の原因を明確化
+   * 3. アクセシビリティ: Role-basedセレクターで支援技術との互換性確保
+   * 4. 保守効率: UI変更に強いテストコードで長期運用コストを削減
    */
   checkFunctionalQuality(filePath, content) {
     const issues = [];
 
     // セレクター戦略の確認
+    // 【実装方針】推奨セレクターとCSS セレクターの使用比率を比較
+    // 【なぜ比率で判定か】適度なCSS セレクター使用は許容、過度な使用を防止
     const preferredSelectors = /getByRole|getByLabel|getByText|getByTestId/gi;
-    const cssSelectors = /locator\(['"][#.].*['"]\)/gi;
+    const cssSelectors = /locator\(['"][#.].*['"]\)/gi;  // ID(#)・クラス(.)セレクター検出
     
     const preferredMatches = content.match(preferredSelectors) || [];
     const cssMatches = content.match(cssSelectors) || [];
@@ -132,6 +184,8 @@ class MECEQualityChecker {
     }
 
     // エラーハンドリングの確認
+    // 【実装方針】try-catch文またはhandleErrorメソッドの存在をチェック
+    // 【なぜ2つの方法か】try-catch（標準）とhandleError（BasePage統一API）の両方を許容
     if (filePath.includes('.spec.ts') || filePath.includes('Page.ts')) {
       const hasTryCatch = /try\s*{[\s\S]*?}\s*catch/gi.test(content);
       const hasHandleError = /handleError/gi.test(content);
@@ -150,12 +204,20 @@ class MECEQualityChecker {
   }
 
   /**
-   * 4. 保守性品質チェック  
+   * 4. 保守性品質チェック
+   * 
+   * 【なぜ保守性品質が長期的に重要か】
+   * 1. 可読性: 日本語テスト名でテスト意図を明確化、レビュー効率向上
+   * 2. 知識継承: 「なぜ」コメントで設計意図を後続開発者に伝達
+   * 3. デバッグ効率: 問題発生時の原因特定・修正時間を大幅短縮
+   * 4. チーム生産性: 新規参加者の理解促進でオンボーディング時間削減
    */
   checkMaintainabilityQuality(filePath, content) {
     const issues = [];
 
     // 日本語テスト名の確認
+    // 【実装方針】test()関数の文字列から日本語文字（ひらがな・カタカナ・漢字）を検出
+    // 【なぜ80%基準か】完全日本語化は求めず、適度な日本語使用を推奨
     if (filePath.includes('.spec.ts')) {
       const testMatches = content.match(/test\(['"][^'"]*['"]/g) || [];
       const japaneseTestCount = testMatches.filter(test => 
@@ -173,7 +235,43 @@ class MECEQualityChecker {
       }
     }
 
+    // Given-When-Then構造の確認
+    // 【実装方針】GIVEN/WHEN/THENコメントの存在をチェック
+    // 【なぜ構造化が重要か】テストの意図を明確化、保守性向上
+    if (filePath.includes('.spec.ts')) {
+      const hasGivenWhenThen = /===\s*(GIVEN|WHEN|THEN)/gi.test(content);
+      const testCount = (content.match(/test\(/g) || []).length;
+      
+      if (testCount > 0 && !hasGivenWhenThen) {
+        issues.push({
+          type: 'MAINTAINABILITY',
+          severity: 'LOW',
+          message: 'Given-When-Then構造の使用を推奨（テストの意図明確化）',
+          file: filePath
+        });
+      }
+    }
+
+    // アサーション数の確認
+    // 【実装方針】expect()の数をカウントして過度なアサーションを検出
+    // 【なぜ5個制限か】1つのテストは1つの責任、過度なアサーションは分割を推奨
+    if (filePath.includes('.spec.ts')) {
+      const expectCount = (content.match(/await expect\(/g) || []).length + 
+                         (content.match(/expect\(/g) || []).length;
+      
+      if (expectCount > 5) {
+        issues.push({
+          type: 'MAINTAINABILITY',
+          severity: 'LOW',
+          message: `アサーション数が多すぎます（${expectCount}個）。テスト分割を検討してください`,
+          file: filePath
+        });
+      }
+    }
+
     // コメントの品質確認
+    // 【実装方針】「なぜ」を含むJSDocコメントとasync関数の比率をチェック
+    // 【なぜ3メソッド以上か】小さなクラスには過度なコメントを求めない
     const whyComments = content.match(/\/\*\*[\s\S]*?なぜ[\s\S]*?\*\//gi) || [];
     const totalMethods = content.match(/async\s+\w+\s*\(/g) || [];
     
@@ -191,6 +289,12 @@ class MECEQualityChecker {
 
   /**
    * ファイル品質チェック実行
+   * 
+   * 【なぜこの実装方針にするか】
+   * 1. 単一責任: 1ファイルの品質チェックのみに集中
+   * 2. 組み合わせ: 4つの品質カテゴリを統合して総合評価
+   * 3. エラー安全性: ファイル読み取り失敗時の適切な例外処理
+   * 4. 結果集計: 品質カテゴリ別の統計情報を自動更新
    */
   checkFile(filePath) {
     try {
@@ -232,6 +336,12 @@ class MECEQualityChecker {
 
   /**
    * プロジェクト全体のチェック実行
+   * 
+   * 【なぜ非同期処理にするか】
+   * 1. 拡張性: 将来的な外部API連携（ESLint、SonarQube等）に対応
+   * 2. パフォーマンス: 大量ファイル処理時の並列化可能性
+   * 3. エラーハンドリング: 非同期エラーの適切な処理
+   * 4. 一貫性: Node.jsのベストプラクティスに準拠
    */
   async checkProject() {
     console.log('🔍 MECE品質チェック開始...\n');
@@ -283,6 +393,12 @@ class MECEQualityChecker {
 
   /**
    * MECE品質レポート生成
+   * 
+   * 【なぜこのレポート形式にするか】
+   * 1. 視覚的理解: アイコンと色分けで問題の重要度を直感的に表示
+   * 2. 意思決定支援: 数値とパーセンテージで改善優先度を明確化
+   * 3. 進捗追跡: 継続的な品質改善の効果測定を可能に
+   * 4. ステークホルダー報告: 非技術者にも理解しやすい形式
    */
   generateReport(totalFiles, totalIssues) {
     console.log('📊 === MECE品質チェック結果 ===\n');
@@ -350,6 +466,12 @@ class MECEQualityChecker {
 
   /**
    * 総合品質スコア計算
+   * 
+   * 【なぜ重み付けスコアを使用するか】
+   * 1. 優先順位: セキュリティ(40%)を最重視、構造(30%)、機能(20%)、保守性(10%)
+   * 2. 実用性: ビジネスインパクトの大きさに応じた評価
+   * 3. 意思決定支援: 限られたリソースをどこに投入すべきかを明確化
+   * 4. 継続改善: 定量的な指標で改善効果を測定可能
    */
   calculateOverallScore() {
     const weights = {

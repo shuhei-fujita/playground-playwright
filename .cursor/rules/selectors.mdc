@@ -1,62 +1,129 @@
-
 ---
 description: Selector strategy rules for Playwright / セレクター戦略ルール
 globs:
-alwaysApply: false
+alwaysApply: true
 ---
 
 # セレクター戦略 / Selector Strategy
 
 ## 優先度（必須遵守） / Priority (Must Follow)
 
-### 1. Role-based Selectors（最優先） / Role-based Selectors (Highest Priority)
+### 📊 **セレクター優先度一覧（公式推奨順）**
+
+| 優先度 | セレクター       | 選択基準       | 安定性 | 例                                          |
+| ------ | ---------------- | -------------- | ------ | ------------------------------------------- |
+| **1**  | **Role-based**   | 要素の役割     | ⭐⭐⭐⭐⭐  | `getByRole('button', { name: 'ログイン' })` |
+| **2**  | **Text-based**   | 表示テキスト   | ⭐⭐⭐⭐   | `getByText('保存')`                         |
+| **3**  | **Label-based**  | フォームラベル | ⭐⭐⭐⭐   | `getByLabel('パスワード')`                  |
+| **4**  | **CSS Selector** | CSSセレクター  | ⭐⭐     | `locator('.btn-primary')` ← **避けるべき**  |
+
+---
+
+## 🎯 **基本ルール**
+
+### ✅ **推奨パターン**
 ```typescript
+// 1. ボタン・リンク・見出し
 await page.getByRole('button', { name: 'ログイン' });
-await page.getByRole('textbox', { name: 'メールアドレス' });
-```
-**理由 / Reason**: アクセシビリティ・セマンティクス重視 / Focus on accessibility and semantics
+await page.getByRole('link', { name: 'ホーム' });
 
-### 2. Label-based Selectors
-```typescript
-await page.getByLabel('パスワード');
-await page.getByPlaceholder('名前を入力');
-```
-**理由 / Reason**: ユーザー視点でのテスト / Testing from user perspective
+// 2. フォーム要素
+await page.getByLabel('メールアドレス');
+await page.getByPlaceholder('パスワードを入力');
 
-### 3. Text-based Selectors
-```typescript
-await page.getByText('保存');
+// 3. 表示テキスト
 await page.getByText('エラーが発生しました');
 ```
-**理由 / Reason**: 直感的な選択 / Intuitive selection
 
-### 4. Test ID Selectors（data-testid）
+### ❌ **禁止パターン**
 ```typescript
-await page.getByTestId('submit-button');
-```
-**理由 / Reason**: テストとスタイルの完全分離 / Complete separation of tests and styles
-
-### 5. CSS Selectors（最終手段） / CSS Selectors (Last Resort)
-```typescript
-// 使用時は必ずコメントで理由を明記
-// Always comment the reason when using
-// 【外部サイトの制約により最終手段として使用】
-// 【Used as last resort due to external site constraints】
-await page.locator('#username');
-```
-
-## アンチパターン（禁止） / Anti-patterns (Prohibited)
-
-### ID/Class依存 / ID/Class Dependencies
-```typescript
-// ❌ 禁止例 / Prohibited example
-await page.locator('#login-form');
+// CSSクラス・ID依存（デザイン変更で破綻）
 await page.locator('.btn-primary');
+await page.locator('#submit-button');
 
-// 理由: スタイル変更でテスト破綻
-// Reason: Tests break when styles change
+// 使用時は必ずコメントで理由を明記
+// 【外部サイト制約により最終手段として使用】
+await page.locator('.external-class');
 ```
 
-## 参考資料 / References
-- [Making your UI tests resilient to change - Kent C. Dodds](https://kentcdodds.com/blog/making-your-ui-tests-resilient-to-change)
-- [idやclassを使ってテストを書くのは、もはやアンチパターンである](https://qiita.com/akameco/items/519f7e4d5442b2a9d2da)
+---
+
+## 🧠 **選定フロー**
+
+### **思考プロセス**
+```mermaid
+flowchart TD
+    A[要素を選択したい] --> B{要素の種類は？}
+    
+    B -->|ボタン・リンク・見出し| C[Role-based を試す]
+    B -->|フォーム要素| D[Label-based を試す]
+    B -->|テキスト表示要素| E[Text-based を試す]
+    
+    C --> F{getByRole で選択可能？}
+    F -->|✅ 可能| G[Role-based を使用]
+    F -->|❌ 不可能| H[次の優先度を検討]
+    
+    D --> I{getByLabel で選択可能？}
+    I -->|✅ 可能| J[Label-based を使用]
+    I -->|❌ 不可能| H
+    
+    E --> K{getByText で選択可能？}
+    K -->|✅ 可能| L[Text-based を使用]
+    K -->|❌ 不可能| H
+    
+    H --> M[CSS Selector を使用<br/>※理由をコメント記載]
+```
+
+### **優先度の理由（公式ドキュメント準拠）**
+- **Role-based (1番)**: ユーザーが要素を認識する方法と同じ → 最も安定
+- **Text-based (2番)**: ユーザーが見る表示テキスト → 直感的で安定
+- **Label-based (3番)**: フォームの説明テキスト → ユーザー視点
+- **CSS Selector (4番)**: 実装詳細依存 → 変更で即破綻（避けるべき）
+
+### **属性セレクターの例**
+```typescript
+// 属性セレクター（中間的な選択肢）
+await page.locator('input[name="email"]');        // name属性
+await page.locator('button[type="submit"]');      // type属性
+await page.locator('[data-testid="submit"]');     // テスト専用属性
+```
+
+### **実装例**
+```typescript
+// ✅ 良い例
+await page.getByRole('button', { name: 'ログイン' });     // ボタン
+await page.getByLabel('メールアドレス');                  // 入力欄
+await page.getByText('ログインしました');                 // メッセージ
+
+// ❌ 悪い例
+await page.locator('.login-btn');                         // クラス依存
+await page.locator('#email-input');                       // ID依存
+```
+
+## 🚫 **アンチパターン**
+
+### **なぜCSS Selectorが危険か（公式ドキュメント準拠）**
+- 💥 **即座に破綻**: デザイン変更でテストが一斉に失敗
+- 🎨 **デザイナー負担**: スタイル変更のたびにテスト修正が必要
+- 🚫 **実装詳細依存**: ユーザーが見えない実装詳細に依存
+- ❌ **公式非推奨**: [Playwright公式ドキュメント](https://playwright.dev/docs/best-practices#use-locators)で避けるべきと明記
+
+### **具体例**
+```typescript
+// ❌ 問題のある例
+await page.locator('.btn-blue').click();
+// → デザイナーが青から緑に変更 → '.btn-green' → テスト破綻
+
+// ✅ 改善例
+await page.getByRole('button', { name: 'ログイン' }).click();
+// → 色が変わってもボタンの役割は変わらない → テスト継続動作
+```
+
+## 📚 **参考資料**
+- [Playwright Best Practices](https://playwright.dev/docs/best-practices)
+- [Playwright Locators - Comprehensive Guide](https://bugbug.io/blog/testing-frameworks/playwright-locators/)
+- [Testing Library Queries](https://testing-library.com/docs/queries/about/)
+- [Making your UI tests resilient to change - Kent C. Dodds](https://kentcdodds.com/
+blog/making-your-ui-tests-resilient-to-change)
+- [idやclassを使ってテストを書くのは、もはやアンチパターンである](https://qiita.com/akameco/
+items/519f7e4d5442b2a9d2da)

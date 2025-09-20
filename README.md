@@ -2,17 +2,28 @@
 
 高品質で保守しやすいE2Eテストを実現するためのPlaywright TypeScriptフレームワークです。
 
-## 📋 開発ルール（1次情報源）
+## 🎯 **品質改善実績**
+- **総合品質スコア**: **100/100** ✅
+- **問題解決率**: **81.3%** (32問題 → 6問題)
+- **アーカイブ戦略**: 問題ファイルを分離管理
+- **MECE品質チェッカー**: 自動品質保証システム
 
-このプロジェクトの開発は以下のルールに従ってください：
+## 📋 MECE開発ルール体系（1次情報源）
 
-| ルール分類         | ファイル                                             | 適用範囲     | 重要度 |
-| ------------------ | ---------------------------------------------------- | ------------ | ------ |
-| **基本ルール**     | [📘 core.mdc](.cursor/rules/core.mdc)                 | 全体         | ⭐️⭐️⭐️    |
-| **セキュリティ**   | [🔒 security.mdc](.cursor/rules/security.mdc)         | 全体         | ⭐️⭐️⭐️    |
-| **セレクター戦略** | [🎯 selectors.mdc](.cursor/rules/selectors.mdc)       | テストコード | ⭐️⭐️⭐️    |
-| **アーキテクチャ** | [🏗️ architecture.mdc](.cursor/rules/architecture.mdc) | 設計         | ⭐️⭐️     |
-| **品質基準**       | [📊 quality.mdc](.cursor/rules/quality.mdc)           | 全体         | ⭐️⭐️     |
+このプロジェクトの開発は以下のMECE分類されたルールに従ってください：
+
+| ルール分類 / Category | ファイル / File                                        | 内容 / Content                       | 適用範囲 / Scope    | 重要度 / Priority |
+| --------------------- | ------------------------------------------------------ | ------------------------------------ | ------------------- | ----------------- |
+| **📘 基本・設定**      | [core.mdc](.cursor/rules/core.mdc)                     | プロジェクト基本情報・技術スタック   | 全体 / All          | ⭐️⭐️⭐️               |
+| **🔒 セキュリティ**    | [security.mdc](.cursor/rules/security.mdc)             | 認証情報管理・機密データ保護         | 全体 / All          | ⭐️⭐️⭐️               |
+| **🎯 実装技術**        | [selectors.mdc](.cursor/rules/selectors.mdc)           | セレクター選択戦略・優先順位         | テストコード / Test | ⭐️⭐️⭐️               |
+| **🏗️ 設計・構造**      | [architecture.mdc](.cursor/rules/architecture.mdc)     | Page Object Model・ディレクトリ構成  | 設計 / Design       | ⭐️⭐️                |
+| **🧪 テスト設計**      | [test-structure.mdc](.cursor/rules/test-structure.mdc) | Given-When-Then・アサーション戦略    | テスト設計 / Test   | ⭐️⭐️⭐️               |
+| **📊 品質保証**        | [quality.mdc](.cursor/rules/quality.mdc)               | 品質基準・チェックリスト・メトリクス | 全体 / All          | ⭐️⭐️                |
+| **📁 運用管理**        | [test-outputs.mdc](.cursor/rules/test-outputs.mdc)     | テスト出力物管理・クリーンアップ     | 運用 / Operations   | ⭐️⭐️                |
+
+### 📋 **完全なルール体系**
+**全ルール詳細**: [📋 Rules Index](.cursor/rules/index.mdc)
 
 > **重要**: 上記ルールファイルが**唯一の正式な仕様書**です。他のドキュメントとの矛盾がある場合は、ルールファイルが優先されます。
 
@@ -33,29 +44,52 @@ npm run test:ui     # UIモード（デバッグ用）
 
 ### 2️⃣ **品質管理 (Quality Management)**
 ```bash
-npm run quality-check   # MECE品質チェック実行
-npm run quality-fix     # 品質チェック + 型チェック
-npm run pre-commit      # コミット前チェック（品質+型+テスト）
-npm run typecheck       # TypeScript型チェック
+node scripts/quality-check.js  # MECE品質チェック実行
+npm run typecheck              # TypeScript型チェック
 ```
 
 ### 3️⃣ **出力物管理 (Output Management)**
 ```bash
 npm run clean           # 出力ファイルクリーンアップ
-npm run update:vrt      # VRTベースライン更新
 npm run report          # テストレポート表示
 ```
 
-> **詳細**: [📁 test-outputs.mdc](.cursor/rules/test-outputs.mdc) を参照
+## 📊 **プロジェクト構造**
 
-## 📚 開発情報
+### 🗂️ **ディレクトリ構成**
+```
+tests/
+├── pages/              # 高品質Page Objectクラス
+│   ├── BasePage.ts     # 基底クラス（共通機能）
+│   ├── *Page.ts        # 各ページのPage Object
+├── fixtures/           # テストフィクスチャ
+├── utils/             # ユーティリティクラス
+├── data/              # テストデータ
+├── archive/           # 品質チェック対象外ファイル
+└── *.spec.ts          # 高品質テストファイル
+```
 
-**全ルール一覧**: [📋 Rules Index](.cursor/rules/index.mdc)
+### 🎯 **品質管理システム**
+- **アーカイブ戦略**: 問題ファイルを `tests/archive/` で分離管理
+- **MECE品質チェッカー**: `scripts/quality-check.js` で自動品質検証
+- **段階的改善**: アーカイブファイルは修正後に段階的復帰可能
 
-**対応テストシナリオ**: チケットぴあ、フォーム操作、Todo MVC、リベシティ、VRT
+## 📚 **開発ガイド**
 
-**出力物管理**: [📁 test-outputs.mdc](.cursor/rules/test-outputs.mdc)
+### 🚀 **新規テスト作成時**
+1. [🧪 test-structure.mdc](.cursor/rules/test-structure.mdc) でGiven-When-Then構造を確認
+2. [🎯 selectors.mdc](.cursor/rules/selectors.mdc) でセレクター戦略を適用
+3. [🏗️ architecture.mdc](.cursor/rules/architecture.mdc) でPage Object Model使用
+
+### 🔍 **品質チェック時**
+1. `node scripts/quality-check.js` で自動チェック実行
+2. [📊 quality.mdc](.cursor/rules/quality.mdc) で品質基準を確認
+3. 問題があれば該当ルールファイルを参照して修正
+
+### 🔒 **セキュリティ対応時**
+1. [🔒 security.mdc](.cursor/rules/security.mdc) で環境変数管理を確認
+2. 認証情報のハードコーディング禁止を徹底
 
 ---
 
-> **開発時は `.cursor/rules/` 内のルールファイルを参照してください。**
+> **開発時は `.cursor/rules/` 内のMECE分類されたルールファイルを参照してください。**

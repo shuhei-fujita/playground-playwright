@@ -54,115 +54,33 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
 });
-```
-```
+## 関連ルール参照 / Related Rules Reference
 
-次に、`selectors.mdc`を更新します：
+詳細なルールは以下を参照 / For detailed rules, refer to:
 
-```markdown:/Users/shuheifujita/git/samples/playground-playwright/.cursor/rules/selectors.mdc
----
-description: Selector strategy rules for Playwright / セレクター戦略ルール
-globs:
-alwaysApply: false
----
+- **セキュリティ / Security**: → [security.mdc](security.mdc)
+- **セレクター戦略 / Selector Strategy**: → [selectors.mdc](selectors.mdc)  
+- **アーキテクチャ / Architecture**: → [architecture.mdc](architecture.mdc)
+- **品質基準 / Quality Standards**: → [quality.mdc](quality.mdc)
+- **テスト構造 / Test Structure**: → [test-structure.mdc](test-structure.mdc)
+- **テスト出力管理 / Test Output Management**: → [test-outputs.mdc](test-outputs.mdc)
 
-# セレクター戦略 / Selector Strategy
+## パフォーマンス設定 / Performance Configuration
 
-## 優先度（必須遵守） / Priority (Must Follow)
-
-### 1. Role-based Selectors（最優先） / Role-based Selectors (Highest Priority)
+### 並行実行 / Parallel Execution
 ```typescript
-await page.getByRole('button', { name: 'ログイン' });
-await page.getByRole('textbox', { name: 'メールアドレス' });
+export default defineConfig({
+  fullyParallel: true,
+  workers: process.env.CI ? 1 : undefined,
+});
 ```
-**理由 / Reason**: アクセシビリティ・セマンティクス重視 / Focus on accessibility and semantics
 
-### 2. Label-based Selectors
+### エラーハンドリング / Error Handling
 ```typescript
-await page.getByLabel('パスワード');
-await page.getByPlaceholder('名前を入力');
-```
-**理由 / Reason**: ユーザー視点でのテスト / Testing from user perspective
-
-### 3. Text-based Selectors
-```typescript
-await page.getByText('保存');
-await page.getByText('エラーが発生しました');
-```
-**理由 / Reason**: 直感的な選択 / Intuitive selection
-
-### 4. Test ID Selectors（data-testid）
-```typescript
-await page.getByTestId('submit-button');
-```
-**理由 / Reason**: テストとスタイルの完全分離 / Complete separation of tests and styles
-
-### 5. CSS Selectors（最終手段） / CSS Selectors (Last Resort)
-```typescript
-// 使用時は必ずコメントで理由を明記
-// Always comment the reason when using
-// 【外部サイトの制約により最終手段として使用】
-// 【Used as last resort due to external site constraints】
-await page.locator('#username');
-```
-
-## アンチパターン（禁止） / Anti-patterns (Prohibited)
-
-### ID/Class依存 / ID/Class Dependencies
-```typescript
-// ❌ 禁止例 / Prohibited example
-await page.locator('#login-form');
-await page.locator('.btn-primary');
-
-// 理由: スタイル変更でテスト破綻
-// Reason: Tests break when styles change
-```
-
-## 参考資料 / References
-- [Making your UI tests resilient to change - Kent C. Dodds](https://kentcdodds.com/blog/making-your-ui-tests-resilient-to-change)
-- [idやclassを使ってテストを書くのは、もはやアンチパターンである](https://qiita.com/akameco/items/519f7e4d5442b2a9d2da)
-```
-
-最後に、`architecture.mdc`を更新します：
-
-```markdown:/Users/shuheifujita/git/samples/playground-playwright/.cursor/rules/architecture.mdc
----
-description: Architecture rules for Playwright tests / アーキテクチャルール
-globs:
-alwaysApply: false
----
-
-# アーキテクチャルール / Architecture Rules
-
-## Page Object Model（必須） / Page Object Model (Required)
-
-### 基本構造 / Basic Structure
-```typescript
-export class PageName extends BasePage {
-  readonly elementName: Locator;
-  
-  constructor(page: Page) {
-    super(page);
-    this.elementName = this.getByRoleSafe('button', { name: 'Submit' });
-  }
-  
-  async actionMethod(): Promise<void> {
-    // 実装 / Implementation
-  }
-}
-```
-
-### ディレクトリ構成（必須） / Directory Structure (Required)
-```
-tests/
-├── pages/           # Page Objectクラス / Page Object classes
-│   ├── BasePage.ts  # 基底クラス / Base class
-│   └── *.page.ts    # 各ページのPage Object / Page Object for each page
-├── fixtures/        # テストフィクスチャ / Test fixtures
-├── utils/          # ユーティリティ / Utilities
-├── data/           # テストデータ / Test data
-└── *.spec.ts       # テストファイル / Test files
-```
+export default defineConfig({
+  retries: process.env.CI ? 2 : 0,
+  use: {
+    trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },

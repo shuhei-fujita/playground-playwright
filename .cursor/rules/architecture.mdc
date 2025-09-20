@@ -33,6 +33,7 @@ tests/
 ├── fixtures/        # テストフィクスチャ / Test fixtures
 ├── utils/          # ユーティリティ / Utilities
 ├── data/           # テストデータ / Test data
+├── archive/        # 品質チェック対象外ファイル / Files excluded from quality checks
 └── *.spec.ts       # テストファイル / Test files
 ```
 
@@ -43,11 +44,7 @@ tests/
 - Page Object: `*Page.ts`
 - ユーティリティ: `*.util.ts` / Utilities: `*.util.ts`
 
-### テスト命名 / Test Naming
-- 日本語推奨: `test('ユーザーがログインできること', ...)` / Japanese recommended: `test('ユーザーがログインできること', ...)`
-- 動作ベース: 「〜ができること」「〜が表示されること」 / Action-based: "〜ができること" "〜が表示されること"
-- ユーティリティ: `*.util.ts`
-
-### テスト命名
-- 日本語推奨: `test('ユーザーがログインできること', ...)`
-- 動作ベース: 「〜ができること」「〜が表示されること」
+### クラス命名 / Class Naming
+- Page Object: `XxxPage extends BasePage`
+- テストデータ: `XxxTestData`
+- ユーティリティ: `XxxUtil`
