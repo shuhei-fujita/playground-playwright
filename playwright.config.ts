@@ -13,7 +13,13 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
 
+  // テスト全体のタイムアウト（20秒）
   timeout: 1000 * 20,
+
+  // アサーションのタイムアウト（10秒）
+  expect: {
+    timeout: 10000,
+  },
 
   /* ファイル内のテストを並列で実行する */
   fullyParallel: true,

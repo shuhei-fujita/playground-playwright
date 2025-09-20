@@ -2,7 +2,6 @@ import { expect, type Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
 import fs from "fs";
 import path from "path";
-import { parse } from "csv-parse/sync";
 
 /**
  * CSV データ駆動テスト用の Page Object
@@ -33,10 +32,17 @@ export class CSVTestPage extends BasePage {
         throw new Error(`CSVファイルが見つかりません: ${this.csvFilePath}`);
       }
 
-      // CSV ファイルの内容を同期的に読み込む
-      const records = parse(fs.readFileSync(this.csvFilePath), {
-        columns: true,
-        skip_empty_lines: true,
+      // CSV ファイルの内容を同期的に読み込む（簡易版）
+      const csvContent = fs.readFileSync(this.csvFilePath, "utf-8");
+      const lines = csvContent.trim().split("\n");
+      const headers = lines[0].split(",");
+      const records = lines.slice(1).map((line) => {
+        const values = line.split(",");
+        const record: any = {};
+        headers.forEach((header, index) => {
+          record[header.trim()] = values[index]?.trim() || "";
+        });
+        return record;
       });
 
       console.log(`CSVデータを読み込みました: ${records.length}件`);
@@ -72,13 +78,15 @@ export class CSVTestPage extends BasePage {
       // 実際のテストロジックをここに実装
       // 例: record.url があればそのページに移動
       if (record.url) {
-        await this.navigateTo(record.url);
-        await this.waitForPageReady();
+        await this.page.goto(record.url);
+        await this.page.waitForLoadState("domcontentloaded");
+        await this.page.waitForLoadState("networkidle");
       }
 
       // 例: record.expectedTitle があればタイトルを検証
       if (record.expectedTitle) {
-        await this.verifyTitle(record.expectedTitle);
+        const title = await this.page.title();
+        expect(title).toContain(record.expectedTitle);
       }
 
       console.log(`テストケース ${record.id} が正常に完了しました`);

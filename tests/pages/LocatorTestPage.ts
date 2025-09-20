@@ -53,7 +53,7 @@ export class LocatorTestPage extends BasePage {
       await this.setButtonContent();
 
       // rules.mdcの第1優先度: Role-basedセレクター
-      const button = this.getByRoleSafe("button");
+      const button = this.page.getByRole("button");
       await expect(button).toBeVisible();
     } catch (error) {
       await this.handleError(`Role-basedセレクターテストに失敗: ${error}`);
@@ -69,7 +69,7 @@ export class LocatorTestPage extends BasePage {
       await this.setButtonContent();
 
       // rules.mdcの第3優先度: Text-basedセレクター
-      const button = this.getByTextSafe("Click me");
+      const button = this.page.getByText("Click me");
       await expect(button).toBeVisible();
     } catch (error) {
       await this.handleError(`Text-basedセレクターテストに失敗: ${error}`);
@@ -119,7 +119,7 @@ export class LocatorTestPage extends BasePage {
       const password = process.env.TEST_PASSWORD || "test-dummy-password";
       await this.page.getByLabel("Password").fill(password);
 
-      await this.getByRoleSafe("button", { name: "Sign in" }).click();
+      await this.page.getByRole("button", { name: "Sign in" }).click();
 
       // ログイン成功の確認（実際のアプリケーションでは適切な成功判定を実装）
       console.log("ログインフォームのデモンストレーション完了");

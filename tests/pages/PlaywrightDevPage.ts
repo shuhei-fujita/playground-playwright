@@ -22,9 +22,11 @@ export class PlaywrightDevPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    // Role-basedセレクターを優先使用
-    this.getStartedButton = this.getByRoleSafe("link", { name: "Get started" });
-    this.navigationMenu = this.getByRoleSafe("navigation");
+    // Role-basedセレクターを優先使用（Playwright標準APIを直接使用）
+    this.getStartedButton = this.page.getByRole("link", {
+      name: "Get started",
+    });
+    this.navigationMenu = this.page.getByRole("navigation");
 
     // セマンティックなタグセレクター使用（CSS クラスより安定）
     this.heroSection = this.page.locator("main").first();
@@ -35,8 +37,9 @@ export class PlaywrightDevPage extends BasePage {
    */
   async navigate(): Promise<void> {
     try {
-      await this.navigateTo(this.url);
-      await this.waitForPageReady();
+      await this.page.goto(this.url);
+      await this.page.waitForLoadState("domcontentloaded");
+      await this.page.waitForLoadState("networkidle");
       await this.waitForContentLoad();
     } catch (error) {
       await this.handleError(`Playwright.devページへの移動に失敗: ${error}`);
@@ -50,8 +53,8 @@ export class PlaywrightDevPage extends BasePage {
    */
   async waitForContentLoad(): Promise<void> {
     try {
-      // 主要コンテンツの読み込み待機
-      await this.waitForVisible(this.heroSection, 15000);
+      // 主要コンテンツの読み込み待機（Playwright標準APIを直接使用）
+      await expect(this.heroSection).toBeVisible({ timeout: 15000 });
 
       // 画像の読み込み完了を待機
       await this.page.waitForFunction(
@@ -104,7 +107,8 @@ export class PlaywrightDevPage extends BasePage {
    */
   async verifyPageTitle(): Promise<void> {
     try {
-      await this.verifyTitle("Playwright");
+      const title = await this.page.title();
+      expect(title).toContain("Playwright");
     } catch (error) {
       await this.handleError(`ページタイトルの検証に失敗: ${error}`);
       throw error;
@@ -116,12 +120,12 @@ export class PlaywrightDevPage extends BasePage {
    */
   async verifyMainElements(): Promise<void> {
     try {
-      await this.waitForVisible(this.heroSection);
-      await this.waitForVisible(this.navigationMenu);
+      await expect(this.heroSection).toBeVisible();
+      await expect(this.navigationMenu).toBeVisible();
 
       // Get Startedボタンの存在確認（存在しない場合もあるため、エラーにしない）
       try {
-        await this.waitForVisible(this.getStartedButton, 3000);
+        await expect(this.getStartedButton).toBeVisible({ timeout: 3000 });
       } catch {
         console.log(
           "Get Startedボタンが見つかりませんでした（ページ構成による）"

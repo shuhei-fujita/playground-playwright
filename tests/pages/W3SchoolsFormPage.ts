@@ -15,7 +15,7 @@ export class W3SchoolsFormPage extends BasePage {
     "https://www.w3schools.com/html/tryit.asp?filename=tryhtml_form_submit";
 
   // iframe内の要素にアクセスするためのフレームロケーター
-  private readonly frame: Locator;
+  private readonly frame: any;
 
   // フォーム要素のロケーター（rules.mdcのセレクター戦略に準拠）
   readonly firstNameInput: Locator;
@@ -47,8 +47,9 @@ export class W3SchoolsFormPage extends BasePage {
    */
   async navigate(): Promise<void> {
     try {
-      await this.navigateTo(this.url);
-      await this.waitForPageReady();
+      await this.page.goto(this.url);
+      await this.page.waitForLoadState("domcontentloaded");
+      await this.page.waitForLoadState("networkidle");
     } catch (error) {
       await this.handleError(`フォームページへの移動に失敗: ${error}`);
       throw error;
@@ -62,7 +63,7 @@ export class W3SchoolsFormPage extends BasePage {
    */
   async fillName(firstName: string, lastName: string): Promise<void> {
     try {
-      await this.waitForVisible(this.firstNameInput);
+      await expect(this.firstNameInput).toBeVisible();
 
       await this.firstNameInput.fill(firstName);
       await this.lastNameInput.fill(lastName);
