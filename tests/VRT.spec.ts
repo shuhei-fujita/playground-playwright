@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { PlaywrightDevPage } from "./pages/PlaywrightDevPage";
+import { LocatorTestPage } from "./pages/LocatorTestPage";
 
 test("Playwright.devページのスクリーンショットが正常に撮影できること", async ({
   page,
@@ -71,4 +72,13 @@ test("Playwright.devページのメイン要素が表示されること", async 
     await playwrightPage.handleError(`要素表示確認でエラーが発生: ${error}`);
     throw error;
   }
+});
+
+test("LocatorTestPageのテスト", async ({ page }) => {
+  const locatorTestPage = new LocatorTestPage(page);
+
+  await locatorTestPage.testRoleBasedSelector();
+  await locatorTestPage.testTextBasedSelector();
+  await locatorTestPage.testLabelBasedSelector();
+  await locatorTestPage.demonstrateSafeLoginForm();
 });

@@ -62,22 +62,22 @@ export default defineConfig({
     },
 
     // クロスブラウザテスト用：Firefox（必要時のみ）
-    {
-      name: "firefox",
-      use: {
-        ...devices["Desktop Firefox"],
-        storageState: "playwright/.auth/user.json",
-      },
-    },
+    // {
+    //   name: "firefox",
+    //   use: {
+    //     ...devices["Desktop Firefox"],
+    //     storageState: "playwright/.auth/user.json",
+    //   },
+    // },
 
     // クロスブラウザテスト用：WebKit（必要時のみ）
-    {
-      name: "webkit",
-      use: {
-        ...devices["Desktop Safari"],
-        storageState: "playwright/.auth/user.json",
-      },
-    },
+    // {
+    //   name: "webkit",
+    //   use: {
+    //     ...devices["Desktop Safari"],
+    //     storageState: "playwright/.auth/user.json",
+    //   },
+    // },
 
     /* モバイルビューポートでのテスト */
     // {
