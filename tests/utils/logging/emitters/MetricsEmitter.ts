@@ -11,7 +11,7 @@ import {
   LogLevel,
   LogCategory,
   TestMetrics,
-} from "../types";
+} from "../../../types";
 
 interface MetricsEmitterConfig {
   directory: string;

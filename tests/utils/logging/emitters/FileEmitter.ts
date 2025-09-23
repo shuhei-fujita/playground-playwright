@@ -9,7 +9,7 @@ import { createGzip } from "zlib";
 import { pipeline } from "stream";
 import { promisify } from "util";
 import * as path from "path";
-import { LogEmitter, LogEntry, LogLevel } from "../types";
+import { LogEmitter, LogEntry, LogLevel } from "../../../types";
 
 const pipelineAsync = promisify(pipeline);
 
@@ -118,7 +118,7 @@ export class FileEmitter implements LogEmitter {
         return;
       }
 
-      this.currentStream.write(data, "utf8", (error) => {
+      this.currentStream.write(data, "utf8", (error?: Error | null) => {
         if (error) {
           reject(error);
         } else {
@@ -202,7 +202,7 @@ export class FileEmitter implements LogEmitter {
         return;
       }
 
-      this.currentStream.end((error) => {
+      this.currentStream.end((error?: Error | null) => {
         if (error) {
           reject(error);
         } else {
@@ -295,7 +295,7 @@ export class FileEmitter implements LogEmitter {
    */
   private setupFlushTimer(): void {
     this.flushTimer = setInterval(() => {
-      this.flush().catch((error) => {
+      this.flush().catch((error: Error) => {
         console.error("定期フラッシュエラー:", error);
       });
     }, 5000); // 5秒間隔

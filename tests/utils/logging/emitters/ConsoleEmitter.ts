@@ -3,7 +3,7 @@
  * 開発時の即座な確認とデバッグに最適化
  */
 
-import { LogEmitter, LogEntry, LogLevel } from "../types";
+import { LogEmitter, LogEntry, LogLevel } from "../../../types";
 
 export class ConsoleEmitter implements LogEmitter {
   private colorEnabled: boolean;

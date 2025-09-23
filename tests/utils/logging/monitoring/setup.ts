@@ -249,8 +249,17 @@ export class LogMonitor {
     // Webhook通知（設定されている場合）
     if (this.config.alertWebhookUrl) {
       try {
-        const fetch = (await import("node-fetch")).default;
-        await fetch(this.config.alertWebhookUrl, {
+        // Node.js 18+ の組み込みfetch または node-fetch を使用
+        let fetchFunction: any;
+
+        if (typeof globalThis.fetch !== "undefined") {
+          fetchFunction = globalThis.fetch;
+        } else {
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          fetchFunction = require("node-fetch");
+        }
+
+        await fetchFunction(this.config.alertWebhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -384,7 +393,11 @@ export async function generateDashboardData(
       errorRate: 0,
     },
     trends: {
-      last24h: [],
+      last24h: [] as Array<{
+        timestamp: string;
+        errorRate: number;
+        avgDuration: number;
+      }>,
       last7d: [],
     },
     topErrors: [],

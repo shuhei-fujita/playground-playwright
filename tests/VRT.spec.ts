@@ -1,7 +1,7 @@
 import { test, expect } from "./fixtures/TestFixtures";
 import { PlaywrightDevPage } from "./pages/PlaywrightDevPage";
 import { LocatorTestPage } from "./pages/LocatorTestPage";
-import { LogCategory } from "./utils/logging";
+import { LogCategory } from "./types";
 
 test("Playwright.devページのスクリーンショットが正常に撮影できること", async ({
   pageWithLogging,

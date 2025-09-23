@@ -3,6 +3,9 @@
  * rules.mdcに準拠: テストデータの分離と型安全性の確保
  */
 
+import type { CsvTestDataRow } from "../types";
+import { URLS } from "../constants";
+
 // ユーザー関連のテストデータ
 // 【セキュリティ重要】パスワードは環境変数から取得するか、テスト用ダミー値として明示
 export const UserTestData = {
@@ -74,23 +77,22 @@ export const TodoTestData = {
   maxLengthTask: "x".repeat(500),
 } as const;
 
-// URL関連のテストデータ
+// URL関連のテストデータ（統一定数から取得）
 export const UrlTestData = {
   external: {
-    playwright: "https://playwright.dev/",
-    github: "https://github.com/",
-    google: "https://www.google.com/",
-    w3schools:
-      "https://www.w3schools.com/html/tryit.asp?filename=tryhtml_form_submit",
+    playwright: URLS.PLAYWRIGHT_DOCS,
+    github: URLS.GITHUB,
+    google: URLS.GOOGLE,
+    w3schools: URLS.W3SCHOOLS_FORM,
   },
   demo: {
-    todoApp: "https://demo.playwright.dev/todomvc",
-    ticketPia: "https://t.pia.jp/",
+    todoApp: URLS.TODO_DEMO,
+    ticketPia: URLS.TICKET_PIA,
   },
   local: {
-    development: "http://localhost:3000",
-    testing: "http://localhost:3001",
-    staging: "https://staging.example.com",
+    development: URLS.LOCAL_DEV,
+    testing: URLS.LOCAL_TEST,
+    staging: URLS.STAGING,
   },
 } as const;
 
@@ -143,18 +145,7 @@ export const DisplayTexts = {
   },
 } as const;
 
-// CSV テストデータのスキーマ定義
-export interface CsvTestDataRow {
-  id: string;
-  testName: string;
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  runTest: "true" | "false";
-  expectedResult: "success" | "failure";
-  description?: string;
-}
+// CSV テストデータのスキーマ定義は tests/types.ts で定義済み
 
 // 動的テストデータ生成用のヘルパー関数
 export class TestDataGenerator {

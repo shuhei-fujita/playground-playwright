@@ -6,7 +6,7 @@
 import { promises as fs } from "fs";
 import { createWriteStream, WriteStream } from "fs";
 import * as path from "path";
-import { LogEmitter, LogEntry, LogLevel, LogCategory } from "../types";
+import { LogEmitter, LogEntry, LogLevel, LogCategory } from "../../../types";
 
 interface StructuredEmitterConfig {
   directory: string;
@@ -407,7 +407,7 @@ export class StructuredEmitter implements LogEmitter {
 
     if (this.logStream) {
       await new Promise<void>((resolve, reject) => {
-        this.logStream!.end((error) => {
+        this.logStream!.end((error?: Error | null) => {
           if (error) reject(error);
           else resolve();
         });
@@ -416,7 +416,7 @@ export class StructuredEmitter implements LogEmitter {
 
     if (this.indexStream) {
       await new Promise<void>((resolve, reject) => {
-        this.indexStream!.end((error) => {
+        this.indexStream!.end((error?: Error | null) => {
           if (error) reject(error);
           else resolve();
         });

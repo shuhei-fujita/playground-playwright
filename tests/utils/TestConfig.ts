@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import path from "path";
+import { URLS, TIMEOUTS, PATHS, TEST_CONFIG } from "../constants";
 
 // 環境変数をロード（機密情報のみ）
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
@@ -26,19 +27,18 @@ const getEnvVar = (key: string, defaultValue?: string): string => {
 // メイン設定オブジェクト
 // ===================================
 export const config = {
-  // URL設定
-  baseUrl: "http://localhost:3000",
-  ticketPiaUrl: "https://t.pia.jp/",
-  playwrightUrl: "https://playwright.dev/",
-  todoAppUrl: "https://demo.playwright.dev/todomvc",
-  w3schoolsFormUrl:
-    "https://www.w3schools.com/html/tryit.asp?filename=tryhtml_form_submit",
-  libecityUrl: "https://libecity.com",
+  // URL設定（統一定数から取得）
+  baseUrl: URLS.LOCAL_DEV,
+  ticketPiaUrl: URLS.TICKET_PIA,
+  playwrightUrl: URLS.PLAYWRIGHT_DOCS,
+  todoAppUrl: URLS.TODO_DEMO,
+  w3schoolsFormUrl: URLS.W3SCHOOLS_FORM,
+  libecityUrl: URLS.LIBECITY,
 
-  // タイムアウト設定
-  defaultTimeout: 30000, // 30秒
-  navigationTimeout: 10000, // 10秒
-  elementTimeout: 5000, // 5秒
+  // タイムアウト設定（統一定数から取得）
+  defaultTimeout: TIMEOUTS.DEFAULT,
+  navigationTimeout: TIMEOUTS.NAVIGATION,
+  elementTimeout: TIMEOUTS.ELEMENT,
 
   // 認証情報
   ticketPiaEmail: getEnvVar("ID_TICKET"),
@@ -100,4 +100,4 @@ export const config = {
 // ===================================
 // 型定義
 // ===================================
-export type TestConfig = typeof config;
+// TestConfig型は tests/types.ts で定義済み

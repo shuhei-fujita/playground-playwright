@@ -12,7 +12,7 @@ import {
   LogConfig,
   LogContext,
   LogMetadata,
-} from "./types";
+} from "../../types";
 
 export class LogManager {
   private static instance: LogManager;

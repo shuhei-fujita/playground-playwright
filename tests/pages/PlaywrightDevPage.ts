@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
+import { URLS } from "../constants";
 
 /**
  * Playwright.dev サイトの Page Object
@@ -12,7 +13,7 @@ import { BasePage } from "./BasePage";
  * 4. 再利用性: 複数のVRTテストでの共通利用
  */
 export class PlaywrightDevPage extends BasePage {
-  readonly url = "https://playwright.dev";
+  readonly url = URLS.PLAYWRIGHT;
 
   // 主要要素のロケーター（rules.mdcのセレクター戦略に準拠）
   readonly heroSection: Locator;

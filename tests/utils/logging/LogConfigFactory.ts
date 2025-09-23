@@ -3,7 +3,7 @@
  * 開発・ステージング・本番環境に応じた最適なログ設定を提供
  */
 
-import { LogLevel, LogConfig } from "./types";
+import { LogLevel, LogConfig } from "../../types";
 import { LogManager } from "./LogManager";
 import { ConsoleEmitter } from "./emitters/ConsoleEmitter";
 import { FileEmitter } from "./emitters/FileEmitter";

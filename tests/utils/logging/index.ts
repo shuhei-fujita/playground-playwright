@@ -3,10 +3,8 @@
  * 日運用対応ログシステムの統一エントリーポイント
  */
 
-// 型定義
-export * from "./types";
-
 // コアクラス
+// ※型定義は tests/types.ts を直接import
 export { LogManager } from "./LogManager";
 export { LogConfigFactory } from "./LogConfigFactory";
 
@@ -19,7 +17,7 @@ export { MetricsEmitter } from "./emitters/MetricsEmitter";
 // 便利関数とユーティリティ
 import { LogManager } from "./LogManager";
 import { LogConfigFactory } from "./LogConfigFactory";
-import { LogLevel, LogCategory, LogConfig } from "./types";
+import { LogLevel, LogCategory, LogConfig } from "../../types";
 
 /**
  * 環境変数からの自動初期化

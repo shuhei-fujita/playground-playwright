@@ -1,5 +1,6 @@
 import { expect, type Page } from "@playwright/test";
-import { LogManager, LogCategory } from "../utils/logging";
+import { LogCategory } from "../types";
+import { LogManager } from "../utils/logging";
 
 /**
  * 全てのPage Objectクラスの基底クラス

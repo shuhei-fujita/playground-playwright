@@ -1,34 +1,17 @@
 import { test as base, Browser, BrowserContext, Page } from "@playwright/test";
 import { BasePage } from "../pages/BasePage";
 import { TestLogger, logger } from "../utils/TestLogger";
-import { TestConfig, config } from "../utils/TestConfig";
-import {
-  LogManager,
-  initializeLoggingSystem,
-  LogLevel,
-  LogCategory,
-} from "../utils/logging";
+import { TestConfig, TestFixtures, LogLevel, LogCategory } from "../types";
+import { config } from "../utils/TestConfig";
+import { LogManager, initializeLoggingSystem } from "../utils/logging";
 import fs from "fs";
 import path from "path";
 
 /**
  * 拡張テストフィクスチャ
  * 共通機能を全てのテストで利用可能にする
+ * 型定義は tests/types.ts で管理
  */
-
-export interface TestFixtures {
-  // 基本のPlaywrightオブジェクト（拡張）
-  contextWithAuth: BrowserContext;
-  pageWithLogging: Page;
-
-  // カスタムユーティリティ
-  logger: TestLogger;
-  config: TestConfig;
-  logManager: LogManager; // 新ログシステム
-
-  // ページオブジェクト用のベースページ
-  basePage: BasePage;
-}
 
 // テストフィクスチャを拡張
 export const test = base.extend<TestFixtures>({

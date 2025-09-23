@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
+import { URLS } from "../constants";
 
 /**
  * W3Schools フォームページの Page Object
@@ -11,8 +12,7 @@ import { BasePage } from "./BasePage";
  * 4. 可読性: テストコードがより直感的になる
  */
 export class W3SchoolsFormPage extends BasePage {
-  readonly url =
-    "https://www.w3schools.com/html/tryit.asp?filename=tryhtml_form_submit";
+  readonly url = URLS.W3SCHOOLS_FORM;
 
   // iframe内の要素にアクセスするためのフレームロケーター
   private readonly frame: any;

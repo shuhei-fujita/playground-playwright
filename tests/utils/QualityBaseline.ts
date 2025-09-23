@@ -1,4 +1,10 @@
 import { logger } from "./TestLogger";
+import type {
+  QualityCheckResult,
+  QualityIssue,
+  QualityRecommendation,
+  ProjectQualityReport,
+} from "../types";
 
 /**
  * 品質水準ベースライン管理クラス
@@ -211,41 +217,4 @@ export class QualityBaseline {
 
     return report;
   }
-}
-
-/**
- * 品質チェック結果の型定義
- */
-export interface QualityCheckResult {
-  filePath: string;
-  passed: boolean;
-  issues: QualityIssue[];
-  score: number; // 0-100のスコア
-  recommendations: QualityRecommendation[];
-}
-
-export interface QualityIssue {
-  type: "VIOLATION" | "WARNING";
-  severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-  message: string;
-  why: string;
-  recommendation: string;
-}
-
-export interface QualityRecommendation {
-  type: "IMPROVEMENT" | "SUGGESTION";
-  message: string;
-  why: string;
-}
-
-export interface ProjectQualityReport {
-  overallScore: number;
-  fileResults: QualityCheckResult[];
-  summary: {
-    totalFiles: number;
-    passedFiles: number;
-    criticalIssues: number;
-    recommendations: number;
-  };
-  improvements: string[];
 }

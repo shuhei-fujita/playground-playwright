@@ -2,6 +2,8 @@
  * テストログ出力のユーティリティクラス
  * 統一されたログフォーマットでテスト実行状況を記録
  */
+
+import { ENV } from "./EnvManager";
 export class TestLogger {
   private static instance: TestLogger;
   private logs: {
@@ -53,7 +55,7 @@ export class TestLogger {
    * @param context - デバッグ情報
    */
   debug(message: string, context?: any): void {
-    if (process.env.NODE_ENV === "development") {
+    if (ENV.isDevelopment()) {
       this.log("DEBUG", message, context);
     }
   }

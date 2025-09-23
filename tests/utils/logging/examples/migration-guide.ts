@@ -3,12 +3,11 @@
  * 既存コードから新しいログシステムへの移行例とベストプラクティス
  */
 
+import { LogLevel, LogCategory } from "../../../types";
 import {
   initializeLoggingSystem,
   createQuickLogger,
   logger as compatibilityLogger,
-  LogLevel,
-  LogCategory,
   LogManager,
 } from "../index";
 
@@ -220,7 +219,8 @@ export function playwrightIntegrationExample() {
   return `
 // tests/example-with-new-logging.spec.ts
 import { test, expect } from '@playwright/test';
-import { initializeLoggingSystem, LogCategory } from '../utils/logging';
+import { LogCategory } from '../../../types';
+import { initializeLoggingSystem } from '../index';
 
 test.describe('新ログシステム統合例', () => {
   let logManager: LogManager;
