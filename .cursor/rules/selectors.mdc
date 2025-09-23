@@ -127,3 +127,6 @@ await page.getByRole('button', { name: 'ログイン' }).click();
 blog/making-your-ui-tests-resilient-to-change)
 - [idやclassを使ってテストを書くのは、もはやアンチパターンである](https://qiita.com/akameco/
 items/519f7e4d5442b2a9d2da)
+
+## セレクター戦略フロー図 / Selector Strategy Flow Diagram
+- **フロー図**: [docs/architecture/README.md](../../docs/architecture/README.md#selector-strategy-flow--セレクター戦略フロー)

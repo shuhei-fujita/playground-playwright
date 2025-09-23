@@ -24,17 +24,29 @@ export class PageName extends BasePage {
 }
 ```
 
-### ディレクトリ構成（必須） / Directory Structure (Required)
+### ディレクトリ構成（実装準拠） / Directory Structure (Implementation-based)
 ```
 tests/
 ├── pages/           # Page Objectクラス / Page Object classes
-│   ├── BasePage.ts  # 基底クラス / Base class
-│   └── *.page.ts    # 各ページのPage Object / Page Object for each page
+│   ├── BasePage.ts              # 基底クラス / Base class
+│   ├── PlaywrightDevPage.ts     # VRT・公式サイト用 / VRT & official site
+│   ├── W3SchoolsFormPage.ts     # iframe・外部フォーム用 / iframe & external form
+│   ├── CSVTestPage.ts           # データ駆動テスト用 / Data-driven testing
+│   └── LocatorTestPage.ts       # セレクター戦略デモ用 / Selector strategy demo
 ├── fixtures/        # テストフィクスチャ / Test fixtures
+│   └── TestFixtures.ts          # 認証・ロギング・Page注入 / Auth, logging, Page injection
 ├── utils/          # ユーティリティ / Utilities
+│   ├── TestConfig.ts            # 環境設定・認証情報管理 / Config & credentials
+│   ├── TestLogger.ts            # 統一ログ・ステップ追跡 / Unified logging
+│   └── QualityBaseline.ts       # 品質チェック・評価基準 / Quality baseline
 ├── data/           # テストデータ / Test data
-├── archive/        # 品質チェック対象外ファイル / Files excluded from quality checks
-└── *.spec.ts       # テストファイル / Test files
+│   ├── TestData.ts              # 静的・動的データ生成 / Static & dynamic data
+│   └── test.csv                 # CSV駆動テスト用 / CSV-driven testing
+├── archive/        # 品質向上対象外（参考実装） / Reference implementations
+│   └── *.spec.ts               # 段階的改善対象ファイル / Gradual improvement targets
+├── VRT.spec.ts     # Visual Regression Testing
+├── auth.setup.ts   # 認証セットアップ / Authentication setup
+└── *-snapshots/    # VRTベースライン画像 / VRT baseline images
 ```
 
 ## 命名規則 / Naming Conventions
@@ -48,3 +60,7 @@ tests/
 - Page Object: `XxxPage extends BasePage`
 - テストデータ: `XxxTestData`
 - ユーティリティ: `XxxUtil`
+
+## アーキテクチャ図 / Architecture Diagrams
+- **POM詳細図**: [docs/architecture/POM.md](../../docs/architecture/POM.md)
+- **全体アーキテクチャ**: [docs/architecture/README.md](../../docs/architecture/README.md)

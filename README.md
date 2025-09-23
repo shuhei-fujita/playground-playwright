@@ -81,6 +81,10 @@ tests/
 2. [🎯 selectors.mdc](.cursor/rules/selectors.mdc) でセレクター戦略を適用
 3. [🏗️ architecture.mdc](.cursor/rules/architecture.mdc) でPage Object Model使用
 
+### 🗺️ **アーキテクチャ図 (Mermaid)**
+- **全体図**: [docs/architecture/README.md](docs/architecture/README.md) - C4, シーケンス, フロー図
+- **POM詳細**: [docs/architecture/POM.md](docs/architecture/POM.md) - Page Object Model構造・設計
+
 ### 🔍 **品質チェック時**
 1. `node scripts/quality-check.js` で自動チェック実行
 2. [📊 quality.mdc](.cursor/rules/quality.mdc) で品質基準を確認
