@@ -1,0 +1,253 @@
+# expect配置戦略ルール / Expect Placement Strategy Rules
+
+## 基本方針 / Basic Policy
+
+### Playwright公式準拠ハイブリッドアプローチ / Playwright Official Hybrid Approach
+- **Page Object内**: アクション実行時の基本成功確認 / Basic success verification for actions
+- **テストファイル内**: テスト固有の詳細検証 / Test-specific detailed verification
+
+## ファイル別実装ガイド / File-specific Implementation Guide
+
+### 📁 **Page Objectファイル (tests/pages/\*.ts)**
+
+#### ✅ **配置すべきexpect**
+```typescript
+// アクション実行時の基本成功確認
+async navigate(): Promise<void> {
+  await this.page.goto(this.url);
+  await this.page.waitForLoadState("domcontentloaded");
+  
+  // 基本的な読み込み成功確認
+  await expect(this.heroSection).toBeVisible({ timeout: 10000 });
+}
+
+async clickButton(): Promise<void> {
+  await this.submitButton.click();
+  
+  // アクション成功の基本確認
+  await expect(this.page).toHaveURL(/success/);
+}
+
+async fillForm(data: FormData): Promise<void> {
+  await this.nameInput.fill(data.name);
+  await this.emailInput.fill(data.email);
+  
+  // 入力値の基本確認
+  await expect(this.nameInput).toHaveValue(data.name);
+  await expect(this.emailInput).toHaveValue(data.email);
+}
+```
+
+#### ❌ **配置すべきでないexpect**
+```typescript
+// テスト固有の詳細検証（テストファイルで実行）
+await expect(this.tableRows).toHaveCount(25);           // 具体的な件数
+await expect(this.errorMessage).toHaveText("特定エラー"); // 特定のメッセージ
+await expect(this.page).toHaveTitle(/特定のページタイトル/); // 特定のタイトル
+```
+
+### 📄 **テストファイル (tests/\*.spec.ts)**
+
+#### ✅ **配置すべきexpect**
+```typescript
+test("具体的なテストケース", async ({ page }) => {
+  const pagePage = new SomePage(page);
+  
+  // Page Objectのメソッド実行（基本確認済み）
+  await somePage.navigate();
+  await somePage.performAction();
+  
+  // テスト固有の詳細検証
+  await expect(page).toHaveTitle(/期待される特定のタイトル/);
+  await expect(page.locator('.result-table tr')).toHaveCount(10);
+  await expect(page.locator('.error-message')).toContainText('期待されるエラー');
+  
+  // 複雑なビジネスロジック検証
+  const userCount = await page.locator('.user-count').textContent();
+  const productCount = await page.locator('.product-count').textContent();
+  expect(parseInt(userCount) + parseInt(productCount)).toBeGreaterThan(50);
+});
+```
+
+#### ❌ **配置すべきでないexpect**
+```typescript
+// 基本的なアクション成功確認（Page Objectで実行）
+await expect(page.locator('main')).toBeVisible();  // ← Page Objectで実行
+await expect(page).toHaveURL(/dashboard/);          // ← ナビゲーションメソッド内で実行
+```
+
+## 判断基準 / Decision Criteria
+
+### **Page Object内に配置 / Place in Page Object**
+- ✅ アクション実行の即座な確認 / Immediate action success verification
+- ✅ ページ読み込み完了の確認 / Page load completion verification  
+- ✅ フォーム入力値の基本確認 / Basic form input verification
+- ✅ ナビゲーション成功の確認 / Navigation success verification
+- ✅ 再利用可能な基本検証 / Reusable basic verification
+
+### **テストファイル内に配置 / Place in Test File**
+- ✅ テスト固有の期待値検証 / Test-specific expected value verification
+- ✅ 具体的な件数・内容の確認 / Specific count/content verification
+- ✅ 複雑なビジネスロジック検証 / Complex business logic verification  
+- ✅ 複数要素の組み合わせ検証 / Multiple element combination verification
+- ✅ テストケース固有の詳細確認 / Test case specific detailed verification
+
+## 実装例 / Implementation Examples
+
+### **PlaywrightDevPage.ts（推奨パターン）**
+```typescript
+export class PlaywrightDevPage extends BasePage {
+  async navigate(): Promise<void> {
+    try {
+      await this.page.goto(this.url);
+      await this.page.waitForLoadState("domcontentloaded");
+      
+      // 基本的な読み込み成功確認（Page Object責任）
+      await expect(this.heroSection).toBeVisible({ timeout: 15000 });
+    } catch (error) {
+      await this.handleError(`ページ移動に失敗: ${error}`);
+      throw error;
+    }
+  }
+
+  async clickGetStarted(): Promise<void> {
+    try {
+      await this.getStartedButton.click();
+      
+      // アクション成功の基本確認（Page Object責任）
+      await expect(this.page).toHaveURL(/docs/);
+    } catch (error) {
+      await this.handleError(`Get Startedクリックに失敗: ${error}`);
+      throw error;
+    }
+  }
+
+  // 詳細検証は引き続きオプションで提供
+  async verifyMainElements(): Promise<void> {
+    try {
+      await expect(this.heroSection).toBeVisible();
+      await expect(this.navigationMenu).toBeVisible();
+    } catch (error) {
+      await this.handleError(`要素検証に失敗: ${error}`);
+      throw error;
+    }
+  }
+}
+```
+
+### **VRT.spec.ts（推奨パターン）**
+```typescript
+test("Playwright.devページのタイトル検証", async ({ page }) => {
+  const playwrightPage = new PlaywrightDevPage(page);
+
+  // === GIVEN ===
+  await playwrightPage.navigate(); // 基本確認済み
+
+  // === WHEN & THEN ===
+  // テスト固有の詳細検証（テストファイル責任）
+  await expect(page).toHaveTitle(/Fast and reliable end-to-end testing/);
+  
+  const title = await page.title();
+  console.log(`✅ 期待されるタイトルを確認: ${title}`);
+});
+
+test("Get Startedボタンの動作確認", async ({ page }) => {
+  const playwrightPage = new PlaywrightDevPage(page);
+
+  await playwrightPage.navigate();               // 基本確認済み
+  await playwrightPage.clickGetStarted();        // 基本確認済み
+
+  // テスト固有の詳細検証
+  await expect(page.locator('h1')).toContainText('Installation');
+  await expect(page.locator('nav .active')).toContainText('Getting Started');
+});
+```
+
+## エラーハンドリング / Error Handling
+
+### **Page Object内**
+```typescript
+async actionMethod(): Promise<void> {
+  try {
+    // アクション実行
+    await this.element.click();
+    
+    // 基本成功確認
+    await expect(this.resultElement).toBeVisible();
+  } catch (error) {
+    // BasePage.handleError()を活用
+    await this.handleError(`actionMethod実行に失敗: ${error}`);
+    throw error; // テスト失敗として再スロー
+  }
+}
+```
+
+### **テストファイル内**
+```typescript
+test("テストケース", async ({ page }) => {
+  try {
+    // Page Objectメソッド実行
+    await somePage.performAction();
+    
+    // テスト固有検証
+    await expect(page).toHaveTitle(/期待タイトル/);
+  } catch (error) {
+    // 必要に応じてカスタムエラー処理
+    console.error(`テスト固有検証でエラー: ${error}`);
+    throw error;
+  }
+});
+```
+
+## 命名規則 / Naming Conventions
+
+### **Page Object内メソッド**
+- `navigate()`: ナビゲーション + 基本確認
+- `click*()`: クリック + 基本確認  
+- `fill*()`: 入力 + 基本確認
+- `verify*()`: 詳細検証メソッド（オプション）
+
+### **テストファイル内**
+- テスト名で検証内容を明確化
+- Given-When-Then構造での整理
+- テスト固有の期待値を明確に記述
+
+## 品質指標 / Quality Metrics
+
+### **Page Object品質**
+- 基本expect使用率: 80%以上（アクションメソッドあたり）
+- エラーハンドリング率: 100%
+- 再利用可能性: 複数テストでの使用
+
+### **テスト品質**
+- テスト固有expect使用率: 1-5個/テスト
+- Given-When-Then構造: 100%遵守
+- 主要アサーション明確性: 1つ/テスト
+
+## 実装チェックリスト / Implementation Checklist
+
+### **Page Object実装時**
+- [ ] アクションメソッドに基本成功確認のexpectを含む
+- [ ] try-catchでエラーハンドリングを実装
+- [ ] BasePage.handleError()を活用
+- [ ] 再利用可能な設計
+
+### **テスト実装時**
+- [ ] Page Objectメソッドを使用
+- [ ] テスト固有の詳細検証をテストファイル内で実行
+- [ ] Given-When-Then構造を維持
+- [ ] 主要アサーションを明確化
+
+## 移行指針 / Migration Guidelines
+
+### **既存コードの移行**
+1. Page Object内の詳細検証メソッドを確認
+2. テスト固有の検証をテストファイルに移動
+3. アクションメソッドに基本成功確認を追加
+4. エラーハンドリングの統一
+
+### **新規実装**
+1. この戦略に従った実装
+2. 公式パターンの参考
+3. コードレビューでの確認
+4. 品質指標の測定

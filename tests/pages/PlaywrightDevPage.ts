@@ -34,12 +34,17 @@ export class PlaywrightDevPage extends BasePage {
 
   /**
    * Playwright.devページに移動
+   * 公式パターン準拠: 基本成功確認を含む
    */
   async navigate(): Promise<void> {
     try {
       await this.page.goto(this.url);
       await this.page.waitForLoadState("domcontentloaded");
       await this.page.waitForLoadState("networkidle");
+
+      // 公式パターン: 基本的な読み込み成功確認
+      await expect(this.heroSection).toBeVisible({ timeout: 15000 });
+
       await this.waitForContentLoad();
     } catch (error) {
       await this.handleError(`Playwright.devページへの移動に失敗: ${error}`);
@@ -116,7 +121,24 @@ export class PlaywrightDevPage extends BasePage {
   }
 
   /**
-   * 主要要素の存在確認
+   * Get Startedボタンをクリック
+   * 公式パターン準拠: アクション + 基本成功確認
+   */
+  async clickGetStarted(): Promise<void> {
+    try {
+      await this.getStartedButton.click();
+
+      // 公式パターン: アクション成功の基本確認
+      await expect(this.page).toHaveURL(/docs/);
+    } catch (error) {
+      await this.handleError(`Get Startedクリックに失敗: ${error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * 主要要素の存在確認（詳細検証メソッド）
+   * テストファイルから必要に応じて呼び出し
    */
   async verifyMainElements(): Promise<void> {
     try {

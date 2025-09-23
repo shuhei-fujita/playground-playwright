@@ -61,6 +61,18 @@ tests/
 - テストデータ: `XxxTestData`
 - ユーティリティ: `XxxUtil`
 
+## expect/assert配置戦略 / Expect/Assert Placement Strategy
+
+### 基本方針（Playwright公式準拠） / Basic Policy (Playwright Official Compliant)
+- **Page Object内**: アクション実行時の基本成功確認 / Basic success verification for actions
+- **テストファイル内**: テスト固有の詳細検証 / Test-specific detailed verification
+
+### 詳細ルール / Detailed Rules
+- **詳細ガイド**: [expect-strategy.mdc](expect-strategy.mdc)
+
 ## アーキテクチャ図 / Architecture Diagrams
 - **POM詳細図**: [docs/architecture/POM.md](../../docs/architecture/POM.md)
 - **全体アーキテクチャ**: [docs/architecture/README.md](../../docs/architecture/README.md)
+
+## 参考
+- https://playwright.dev/docs/pom
