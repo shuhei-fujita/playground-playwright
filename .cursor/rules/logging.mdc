@@ -67,28 +67,84 @@ test('テスト名', async ({ page, logManager }, testInfo) => {
 });
 ```
 
+## 🏗️ 責務分離ルール / Responsibility Separation Rules
+
+### **ログ配置の責務分離 / Log Placement Responsibility Separation**
+
+| 層 / Layer       | 配置すべきログ / Logs to Place                                                           | 配置しないログ / Logs NOT to Place                |
+| ---------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| **BasePage**     | ✅ 共通エラーハンドリング<br/>✅ 基本パフォーマンス測定<br/>✅ スクリーンショット記録       | ❌ ページ固有の詳細ログ<br/>❌ テスト固有のログ     |
+| **Page Objects** | ✅ ページ操作ログ（navigate, click）<br/>✅ ページ固有パフォーマンス測定<br/>✅ VRT固有ログ | ❌ システムレベルログ<br/>❌ テスト開始・終了ログ   |
+| **TestFixtures** | ✅ テストライフサイクル<br/>✅ システムイベント<br/>✅ LogManager初期化                     | ❌ ページ固有操作ログ<br/>❌ アサーション関連ログ   |
+| **Test Files**   | ✅ Given-When-Thenマーカー<br/>✅ テスト固有アサーション記録                               | ❌ 詳細パフォーマンス測定<br/>❌ システム初期化ログ |
+
 ### **Page Object統合ルール / Page Object Integration Rules**
 
 **✅ BasePage継承クラスでのログ使用 / Log Usage in BasePage Inheritance**
 ```typescript
 export class XXXPage extends BasePage {
   constructor(page: Page, logManager?: LogManager) {
-    super(page);
-    this.logManager = logManager;
+    super(page, logManager); // ✅ 正しい：BasePageにlogManager渡す
   }
   
   async navigate(url: string): Promise<void> {
-    // ページ操作ログ必須 / Page operation log required
-    this.logManager?.info(`ページ移動: ${url}`, LogCategory.PAGE_INTERACTION);
+    // ✅ パフォーマンス測定開始
+    this.startPerformanceMeasurement();
+    this.logInfo('ページ移動開始', { url });
     
-    // パフォーマンス測定推奨 / Performance measurement recommended
-    const startTime = Date.now();
-    await this.page.goto(url);
-    const duration = Date.now() - startTime;
-    
-    this.logManager?.performance('ページロード', { duration });
+    try {
+      await this.page.goto(url);
+      await this.page.waitForLoadState("domcontentloaded");
+      
+      // ✅ パフォーマンス測定完了とログ
+      this.logPerformance('ページ移動完了', {
+        url,
+        loadSuccess: true,
+      });
+      
+    } catch (error) {
+      this.logError('ページ移動失敗', error as Error, { url });
+      throw error;
+    }
   }
 }
+```
+
+### **TestFixtures統合ルール / TestFixtures Integration Rules**
+
+**✅ 必須実装パターン / Required Implementation Pattern**
+```typescript
+export interface TestFixtures {
+  pageWithLogging: Page;
+  logManager: LogManager; // ✅ 必須：LogManager提供
+  // ... 他のフィクスチャ
+}
+
+export const test = base.extend<TestFixtures>({
+  logManager: async ({}, use, testInfo) => {
+    const logManager = await initializeLoggingSystem({
+      level: process.env.NODE_ENV === 'development' ? LogLevel.DEBUG : LogLevel.INFO,
+      enableConsole: true,
+      enableFile: process.env.NODE_ENV !== 'test',
+      // ... 設定
+    });
+
+    // ✅ テストスイート開始ログ
+    logManager.info('🚀 テストスイート開始', LogCategory.TEST_EXECUTION, {
+      testInfo: {
+        title: testInfo.title,
+        file: testInfo.file,
+        sessionId: logManager.getSessionId(),
+      },
+    });
+
+    await use(logManager);
+
+    // ✅ テストスイート終了ログ
+    logManager.info('🏁 テストスイート終了', LogCategory.TEST_EXECUTION);
+    await logManager.flush();
+  },
+});
 ```
 
 ## 🚫 禁止事項 / Prohibited Practices
@@ -273,4 +329,5 @@ LOG_METRICS=true
 
 **📝 ルール更新履歴 / Rule Update History**
 - v1.0.0: 初期ログルール作成 (2025-01-23) / Initial logging rules creation
-- 最終更新 / Last updated: 2025-01-23
+- v2.0.0: 責務分離ルール追加・実装統合 (2025-01-24) / Responsibility separation rules & implementation integration
+- 最終更新 / Last updated: 2025-01-24

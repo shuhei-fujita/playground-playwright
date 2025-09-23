@@ -13,13 +13,28 @@ alwaysApply: false
 export class PageName extends BasePage {
   readonly elementName: Locator;
   
-  constructor(page: Page) {
-    super(page);
-    this.elementName = this.getByRoleSafe('button', { name: 'Submit' });
+  constructor(page: Page, logManager?: LogManager) {
+    super(page, logManager); // ✅ ログシステム統合
+    this.elementName = this.page.getByRole('button', { name: 'Submit' });
   }
   
   async actionMethod(): Promise<void> {
-    // 実装 / Implementation
+    // ✅ パフォーマンス測定とログ
+    this.startPerformanceMeasurement();
+    this.logInfo('アクション開始');
+    
+    try {
+      // 実装 / Implementation
+      await this.elementName.click();
+      
+      this.logPerformance('アクション完了', {
+        action: 'click',
+        element: 'Submit',
+      });
+    } catch (error) {
+      this.logError('アクション失敗', error as Error);
+      throw error;
+    }
   }
 }
 ```
@@ -37,8 +52,13 @@ tests/
 │   └── TestFixtures.ts          # 認証・ロギング・Page注入 / Auth, logging, Page injection
 ├── utils/          # ユーティリティ / Utilities
 │   ├── TestConfig.ts            # 環境設定・認証情報管理 / Config & credentials
-│   ├── TestLogger.ts            # 統一ログ・ステップ追跡 / Unified logging
-│   └── QualityBaseline.ts       # 品質チェック・評価基準 / Quality baseline
+│   ├── TestLogger.ts            # 統一ログ・ステップ追跡 / Unified logging (legacy)
+│   ├── QualityBaseline.ts       # 品質チェック・評価基準 / Quality baseline
+│   └── logging/                 # 新ログシステム / New logging system
+│       ├── LogManager.ts        # 中核ログ管理 / Core log management
+│       ├── types.ts             # 型定義 / Type definitions
+│       ├── index.ts             # エクスポート / Exports
+│       └── emitters/            # ログ出力先 / Log output destinations
 ├── data/           # テストデータ / Test data
 │   ├── TestData.ts              # 静的・動的データ生成 / Static & dynamic data
 │   └── test.csv                 # CSV駆動テスト用 / CSV-driven testing
@@ -70,11 +90,59 @@ tests/
 ### 詳細ルール / Detailed Rules
 - **詳細ガイド**: [expect-strategy.mdc](expect-strategy.mdc)
 
+## テストファイル実装パターン / Test File Implementation Patterns
+
+### ✅ **新ログシステム統合テスト / New Logging System Integration**
+```typescript
+// ✅ 正しい：TestFixturesからlogManagerを取得
+import { test, expect } from "./fixtures/TestFixtures";
+import { PlaywrightDevPage } from "./pages/PlaywrightDevPage";
+import { LogCategory } from "./utils/logging";
+
+test("VRTテスト", async ({ pageWithLogging, logManager }, testInfo) => {
+  const playwrightPage = new PlaywrightDevPage(pageWithLogging, logManager);
+
+  // ✅ テスト開始ログ
+  logManager.startTest(testInfo.title);
+  
+  try {
+    // ✅ Given-When-Then構造化ログ
+    logManager.info("🏁 === GIVEN: テスト前提条件 ===", LogCategory.TEST_EXECUTION);
+    await playwrightPage.navigate(); // 自動的にパフォーマンス測定・ログ記録
+    
+    logManager.info("⚡ === WHEN: VRT実行 ===", LogCategory.TEST_EXECUTION);
+    await playwrightPage.takeVRTScreenshot(); // 自動的にログ記録
+    
+    logManager.info("✅ === THEN: 成功 ===", LogCategory.TEST_EXECUTION);
+    
+  } catch (error) {
+    // エラーは自動的にPage Objectでログ記録される
+    throw error;
+  }
+});
+```
+
+### ❌ **避けるべきパターン / Patterns to Avoid**
+```typescript
+// ❌ 間違い：古いplaywrightテストパターン
+import { test, expect } from "@playwright/test";
+
+test("テスト", async ({ page }) => {
+  const playwrightPage = new PlaywrightDevPage(page); // logManager不足
+  // ログが記録されない
+});
+```
+
 ## 関連ドキュメント / Related Documents
 
 詳細なアーキテクチャ図・実装例は docs/architecture/ を参照してください。
 
 For detailed architecture diagrams and implementation examples, refer to docs/architecture/.
+
+### **関連ルール / Related Rules**
+- **ログシステム**: [logging.mdc](logging.mdc) - 責務分離・実装ルール
+- **セレクター戦略**: [selectors.mdc](selectors.mdc) - 要素選択パターン
+- **テスト構造**: [test-structure.mdc](test-structure.mdc) - Given-When-Then構造
 
 ## 参考 / References
 - https://playwright.dev/docs/pom
