@@ -8,17 +8,18 @@ alwaysApply: true
 
 ## ルールファイル構成（1次情報源） / Rule File Structure (Primary Source)
 
-| ファイル / File                            | 内容 / Content                                                        | 適用範囲 / Scope         | 更新頻度 / Update Frequency |
-| ------------------------------------------ | --------------------------------------------------------------------- | ------------------------ | --------------------------- |
-| [📘 core.mdc](core.mdc)                     | プロジェクト基本情報・技術スタック / Project basics & tech stack      | 全体 / All               | 低 / Low                    |
-| [🔒 security.mdc](security.mdc)             | 認証情報管理・セキュリティ基準 / Auth management & security standards | 全体 / All               | 中 / Medium                 |
-| [🎯 selectors.mdc](selectors.mdc)           | セレクター選択戦略・優先順位 / Selector strategy & priority           | テストコード / Test code | 低 / Low                    |
-| [🏗️ architecture.mdc](architecture.mdc)     | Page Object Model・構成規則 / Page Object Model & structure rules     | 設計 / Design            | 中 / Medium                 |
-| [📊 quality.mdc](quality.mdc)               | 品質基準・チェックリスト / Quality standards & checklist              | 全体 / All               | 高 / High                   |
-| [📁 test-outputs.mdc](test-outputs.mdc)     | テスト出力物管理・クリーンアップ / Test output management & cleanup   | 運用 / Operations        | 中 / Medium                 |
-| [🧪 test-structure.mdc](test-structure.mdc) | Given-When-Then・アサーション戦略 / GWT & assertion strategy          | テスト設計 / Test design | 高 / High                   |
-| [🎯 expect-strategy.mdc](expect-strategy.mdc) | expect配置戦略・Playwright公式準拠 / Expect placement strategy & Playwright compliant | 実装 / Implementation | 中 / Medium |
-| [❓ project-faq.mdc](project-faq.mdc)       | プロジェクト固有Q&A・トラブルシューティング / Project-specific FAQ & troubleshooting | 全体 / All | 高 / High |
+| ファイル / File                              | 内容 / Content                                                                                  | 適用範囲 / Scope                      | 更新頻度 / Update Frequency |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------- | --------------------------- |
+| [📘 core.mdc](core.mdc)                       | プロジェクト基本情報・技術スタック / Project basics & tech stack                                | 全体 / All                            | 低 / Low                    |
+| [🔒 security.mdc](security.mdc)               | 認証情報管理・セキュリティ基準 / Auth management & security standards                           | 全体 / All                            | 中 / Medium                 |
+| [🎯 selectors.mdc](selectors.mdc)             | セレクター選択戦略・優先順位 / Selector strategy & priority                                     | テストコード / Test code              | 低 / Low                    |
+| [🏗️ architecture.mdc](architecture.mdc)       | Page Object Model・構成規則 / Page Object Model & structure rules                               | 設計 / Design                         | 中 / Medium                 |
+| [📊 quality.mdc](quality.mdc)                 | 品質基準・チェックリスト / Quality standards & checklist                                        | 全体 / All                            | 高 / High                   |
+| [📁 test-outputs.mdc](test-outputs.mdc)       | テスト出力物管理・クリーンアップ / Test output management & cleanup                             | 運用 / Operations                     | 中 / Medium                 |
+| [🧪 test-structure.mdc](test-structure.mdc)   | Given-When-Then・アサーション戦略 / GWT & assertion strategy                                    | テスト設計 / Test design              | 高 / High                   |
+| [🎯 expect-strategy.mdc](expect-strategy.mdc) | expect配置戦略・Playwright公式準拠 / Expect placement strategy & Playwright compliant           | 実装 / Implementation                 | 中 / Medium                 |
+| [📊 logging.mdc](logging.mdc)                 | ログシステムルール・セキュリティ・パフォーマンス / Logging system rules, security & performance | 実装・品質 / Implementation & Quality | 高 / High                   |
+| [❓ project-faq.mdc](project-faq.mdc)         | プロジェクト固有Q&A・トラブルシューティング / Project-specific FAQ & troubleshooting            | 全体 / All                            | 高 / High                   |
 
 ## MECE分析結果 / MECE Analysis Results
 
@@ -31,13 +32,14 @@ alwaysApply: true
 - **test-outputs.mdc**: 運用管理特化（出力物・クリーンアップ）
 - **test-structure.mdc**: テスト設計特化（GWT・アサーション）
 - **expect-strategy.mdc**: expect配置戦略特化（Playwright公式準拠）
+- **logging.mdc**: ログシステム特化（ルール・セキュリティ・パフォーマンス）
 - **project-faq.mdc**: Q&A特化（トラブルシューティング・ベストプラクティス）
 
 ### ✅ **Collectively Exhaustive (網羅性)** - 漏れなし
 1. **📋 プロジェクト管理**: core.mdc
-2. **🔒 セキュリティ**: security.mdc  
-3. **🎯 実装技術**: selectors.mdc + architecture.mdc + expect-strategy.mdc
-4. **📊 品質保証**: quality.mdc + test-structure.mdc
+2. **🔒 セキュリティ**: security.mdc + logging.mdc（ログセキュリティ）  
+3. **🎯 実装技術**: selectors.mdc + architecture.mdc + expect-strategy.mdc + logging.mdc（ログ統合）
+4. **📊 品質保証**: quality.mdc + test-structure.mdc + logging.mdc（ログ品質）
 5. **🛠️ 運用管理**: test-outputs.mdc
 6. **❓ サポート**: project-faq.mdc
 

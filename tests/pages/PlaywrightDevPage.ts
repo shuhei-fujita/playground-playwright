@@ -19,8 +19,8 @@ export class PlaywrightDevPage extends BasePage {
   readonly navigationMenu: Locator;
   readonly getStartedButton: Locator;
 
-  constructor(page: Page) {
-    super(page);
+  constructor(page: Page, logManager?: any) {
+    super(page, logManager);
 
     // Role-basedセレクターを優先使用（Playwright標準APIを直接使用）
     this.getStartedButton = this.page.getByRole("link", {
@@ -37,6 +37,9 @@ export class PlaywrightDevPage extends BasePage {
    * 公式パターン準拠: 基本成功確認を含む
    */
   async navigate(): Promise<void> {
+    this.startPerformanceMeasurement();
+    this.logInfo("Playwright.devページへの移動開始", { url: this.url });
+
     try {
       await this.page.goto(this.url);
       await this.page.waitForLoadState("domcontentloaded");
@@ -46,7 +49,15 @@ export class PlaywrightDevPage extends BasePage {
       await expect(this.heroSection).toBeVisible({ timeout: 15000 });
 
       await this.waitForContentLoad();
+
+      this.logPerformance("Playwright.devページ移動完了", {
+        url: this.url,
+        heroSectionVisible: true,
+      });
     } catch (error) {
+      this.logError("Playwright.devページへの移動に失敗", error as Error, {
+        url: this.url,
+      });
       await this.handleError(`Playwright.devページへの移動に失敗: ${error}`);
       throw error;
     }
@@ -91,6 +102,12 @@ export class PlaywrightDevPage extends BasePage {
     fullPage?: boolean;
     clip?: { x: number; y: number; width: number; height: number };
   }): Promise<void> {
+    this.startPerformanceMeasurement();
+    this.logInfo("VRTスクリーンショット撮影開始", {
+      fullPage: options?.fullPage ?? true,
+      hasClip: !!options?.clip,
+    });
+
     try {
       await this.waitForContentLoad();
 
@@ -101,7 +118,13 @@ export class PlaywrightDevPage extends BasePage {
         fullPage: options?.fullPage ?? true,
         clip: options?.clip,
       });
+
+      this.logPerformance("VRTスクリーンショット撮影完了", {
+        fullPage: options?.fullPage ?? true,
+        screenshotGenerated: true,
+      });
     } catch (error) {
+      this.logError("VRTスクリーンショット撮影に失敗", error as Error, options);
       await this.handleError(`VRTスクリーンショット撮影に失敗: ${error}`);
       throw error;
     }
@@ -125,12 +148,21 @@ export class PlaywrightDevPage extends BasePage {
    * 公式パターン準拠: アクション + 基本成功確認
    */
   async clickGetStarted(): Promise<void> {
+    this.startPerformanceMeasurement();
+    this.logInfo("Get Startedボタンクリック開始");
+
     try {
       await this.getStartedButton.click();
 
       // 公式パターン: アクション成功の基本確認
       await expect(this.page).toHaveURL(/docs/);
+
+      this.logPerformance("Get Startedクリック完了", {
+        navigationSuccessful: true,
+        newUrl: this.page.url(),
+      });
     } catch (error) {
+      this.logError("Get Startedクリックに失敗", error as Error);
       await this.handleError(`Get Startedクリックに失敗: ${error}`);
       throw error;
     }

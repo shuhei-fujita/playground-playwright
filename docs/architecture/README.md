@@ -1,6 +1,42 @@
-# アーキテクチャ図 / Architecture Diagrams
+# アーキテクチャドキュメント / Architecture Documentation
 
-以下はMermaidを埋め込んだMarkdownです。GitHubやエディタのMermaidプレビュー機能で閲覧できます。
+このディレクトリには、プロジェクトのアーキテクチャに関するドキュメントが含まれています。
+
+This directory contains architecture-related documentation for the project.
+
+## 📚 ドキュメント構成 / Document Structure
+
+| ドキュメント / Document | 内容 / Content | 対象読者 / Target Audience |
+|---|---|---|
+| **[📊 diagrams.md](diagrams.md)** | Mermidアーキテクチャ図表集 / Mermaid architecture diagrams collection | 設計者・開発者 / Designers & Developers |
+| **[💡 implementation-guide.md](implementation-guide.md)** | 実装ガイド・コード例 / Implementation guide & code examples | 実装者 / Implementers |
+| **[❓ faq.md](faq.md)** | よくある質問（ルール参照型） / FAQ (rule-referencing type) | 全員 / Everyone |
+
+## 🔗 関連ルールファイル / Related Rule Files
+
+詳細な実装ルールは以下のルールファイルを参照してください：
+
+For detailed implementation rules, refer to the following rule files:
+
+- **[🏗️ architecture.mdc](../../.cursor/rules/architecture.mdc)** - Page Object Model基本ルール
+- **[🎯 selectors.mdc](../../.cursor/rules/selectors.mdc)** - セレクター戦略ルール  
+- **[🎯 expect-strategy.mdc](../../.cursor/rules/expect-strategy.mdc)** - expect配置戦略ルール
+
+## 🚀 クイックナビゲーション / Quick Navigation
+
+### 新規参加者向け / For New Team Members
+1. **[ルール概要](../../.cursor/rules/index.mdc)** でプロジェクトルール体系を理解
+2. **[implementation-guide.md](implementation-guide.md)** で具体的な実装方法を学習
+3. **[diagrams.md](diagrams.md)** でアーキテクチャ全体像を把握
+
+### 実装時 / During Implementation  
+1. **[architecture.mdc](../../.cursor/rules/architecture.mdc)** で必須ルールを確認
+2. **[implementation-guide.md](implementation-guide.md)** で実装パターンを参照
+3. **[faq.md](faq.md)** で困った時の解決方法を確認
+
+### 設計時 / During Design
+1. **[diagrams.md](diagrams.md)** で現在のアーキテクチャを確認
+2. **[architecture.mdc](../../.cursor/rules/architecture.mdc)** でルール準拠を確認
 
 ## C4 Context / コンテキスト図
 システム全体の境界と外部との関係を示します。

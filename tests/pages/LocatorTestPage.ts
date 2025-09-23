@@ -12,8 +12,8 @@ import { BasePage } from "./BasePage";
  * 4. 教育目的: 推奨されるセレクター戦略の実装例
  */
 export class LocatorTestPage extends BasePage {
-  constructor(page: Page) {
-    super(page);
+  constructor(page: Page, logManager?: any) {
+    super(page, logManager);
   }
 
   /**
@@ -49,13 +49,28 @@ export class LocatorTestPage extends BasePage {
    * Role-basedセレクターでボタンを取得・検証
    */
   async testRoleBasedSelector(): Promise<void> {
+    this.startPerformanceMeasurement();
+    this.logInfo("Role-basedセレクターテスト開始", {
+      strategy: "role-based",
+      priority: 1,
+    });
+
     try {
       await this.setButtonContent();
 
       // rules.mdcの第1優先度: Role-basedセレクター
       const button = this.page.getByRole("button");
       await expect(button).toBeVisible();
+
+      this.logPerformance("Role-basedセレクター成功", {
+        strategy: "role-based",
+        selectorUsed: 'getByRole("button")',
+        result: "success",
+      });
     } catch (error) {
+      this.logError("Role-basedセレクターテストに失敗", error as Error, {
+        strategy: "role-based",
+      });
       await this.handleError(`Role-basedセレクターテストに失敗: ${error}`);
       throw error;
     }
@@ -65,13 +80,28 @@ export class LocatorTestPage extends BasePage {
    * Text-basedセレクターで要素を取得・検証
    */
   async testTextBasedSelector(): Promise<void> {
+    this.startPerformanceMeasurement();
+    this.logInfo("Text-basedセレクターテスト開始", {
+      strategy: "text-based",
+      priority: 2,
+    });
+
     try {
       await this.setButtonContent();
 
       // rules.mdcの第3優先度: Text-basedセレクター
       const button = this.page.getByText("Click me");
       await expect(button).toBeVisible();
+
+      this.logPerformance("Text-basedセレクター成功", {
+        strategy: "text-based",
+        selectorUsed: 'getByText("Click me")',
+        result: "success",
+      });
     } catch (error) {
+      this.logError("Text-basedセレクターテストに失敗", error as Error, {
+        strategy: "text-based",
+      });
       await this.handleError(`Text-basedセレクターテストに失敗: ${error}`);
       throw error;
     }
@@ -81,13 +111,28 @@ export class LocatorTestPage extends BasePage {
    * Label-basedセレクターで入力フィールドを取得・検証
    */
   async testLabelBasedSelector(): Promise<void> {
+    this.startPerformanceMeasurement();
+    this.logInfo("Label-basedセレクターテスト開始", {
+      strategy: "label-based",
+      priority: 3,
+    });
+
     try {
       await this.setFormContent();
 
       // rules.mdcの第2優先度: Label-basedセレクター
       const input = this.page.getByLabel("User Name");
       await expect(input).toBeVisible();
+
+      this.logPerformance("Label-basedセレクター成功", {
+        strategy: "label-based",
+        selectorUsed: 'getByLabel("User Name")',
+        result: "success",
+      });
     } catch (error) {
+      this.logError("Label-basedセレクターテストに失敗", error as Error, {
+        strategy: "label-based",
+      });
       await this.handleError(`Label-basedセレクターテストに失敗: ${error}`);
       throw error;
     }

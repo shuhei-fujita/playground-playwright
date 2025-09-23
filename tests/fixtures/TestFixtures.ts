@@ -2,6 +2,12 @@ import { test as base, Browser, BrowserContext, Page } from "@playwright/test";
 import { BasePage } from "../pages/BasePage";
 import { TestLogger, logger } from "../utils/TestLogger";
 import { TestConfig, config } from "../utils/TestConfig";
+import {
+  LogManager,
+  initializeLoggingSystem,
+  LogLevel,
+  LogCategory,
+} from "../utils/logging";
 import fs from "fs";
 import path from "path";
 
@@ -18,6 +24,7 @@ export interface TestFixtures {
   // カスタムユーティリティ
   logger: TestLogger;
   config: TestConfig;
+  logManager: LogManager; // 新ログシステム
 
   // ページオブジェクト用のベースページ
   basePage: BasePage;
@@ -111,9 +118,53 @@ export const test = base.extend<TestFixtures>({
     logger.info("ページを閉じました");
   },
 
-  // ロガーインスタンス
+  // ロガーインスタンス（既存）
   logger: async ({}, use) => {
     await use(logger);
+  },
+
+  // 新ログシステム
+  logManager: async ({}, use, testInfo) => {
+    const logManager = await initializeLoggingSystem({
+      level:
+        process.env.NODE_ENV === "development" ? LogLevel.DEBUG : LogLevel.INFO,
+      enableConsole: true,
+      enableFile: process.env.NODE_ENV !== "test",
+      enableStructured: process.env.NODE_ENV === "production",
+      enableMetrics:
+        process.env.NODE_ENV === "production" || !!process.env.ENABLE_METRICS,
+      fileConfig: {
+        directory: "test-results/logs",
+        maxFileSize: 50,
+        maxFiles: 30,
+        compress: true,
+      },
+    });
+
+    // テストスイート開始ログ
+    logManager.info("🚀 テストスイート開始", LogCategory.TEST_EXECUTION, {
+      testInfo: {
+        title: testInfo.title,
+        file: testInfo.file,
+        sessionId: logManager.getSessionId(),
+      },
+      customData: {
+        projectName: testInfo.project.name,
+        timeout: testInfo.timeout,
+      },
+    });
+
+    await use(logManager);
+
+    // テストスイート終了ログ
+    logManager.info("🏁 テストスイート終了", LogCategory.TEST_EXECUTION, {
+      testInfo: {
+        title: testInfo.title,
+        sessionId: logManager.getSessionId(),
+      },
+    });
+
+    await logManager.flush();
   },
 
   // 設定インスタンス
@@ -122,12 +173,12 @@ export const test = base.extend<TestFixtures>({
   },
 
   // ベースページインスタンス
-  basePage: async ({ pageWithLogging }, use) => {
+  basePage: async ({ pageWithLogging, logManager }, use) => {
     const basePage = new (class extends BasePage {
-      constructor(page: Page) {
-        super(page);
+      constructor(page: Page, logManager: LogManager) {
+        super(page, logManager);
       }
-    })(pageWithLogging);
+    })(pageWithLogging, logManager);
 
     await use(basePage);
   },

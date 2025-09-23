@@ -70,9 +70,11 @@ tests/
 ### 詳細ルール / Detailed Rules
 - **詳細ガイド**: [expect-strategy.mdc](expect-strategy.mdc)
 
-## アーキテクチャ図 / Architecture Diagrams
-- **POM詳細図**: [docs/architecture/POM.md](../../docs/architecture/POM.md)
-- **全体アーキテクチャ**: [docs/architecture/README.md](../../docs/architecture/README.md)
+## 関連ドキュメント / Related Documents
 
-## 参考
+詳細なアーキテクチャ図・実装例は docs/architecture/ を参照してください。
+
+For detailed architecture diagrams and implementation examples, refer to docs/architecture/.
+
+## 参考 / References
 - https://playwright.dev/docs/pom

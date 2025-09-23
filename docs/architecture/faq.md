@@ -1,67 +1,38 @@
-# プロジェクト固有Q&A / Project-Specific FAQ
+# よくある質問 / Frequently Asked Questions
+
+このドキュメントは、プロジェクトでよくある質問と回答をまとめたものです。詳細な実装方法は関連ルールファイルを参照してください。
+
+This document contains frequently asked questions and answers for the project. For detailed implementation methods, refer to the related rule files.
 
 ## 設計・アーキテクチャ / Design & Architecture
 
 ### Q1: expect/assertはPage Object内とテストファイル内のどちらに書くべき？
-**A:** Playwright公式準拠のハイブリッドアプローチを採用しています：
 
-```typescript
-// ✅ Page Object内: アクション実行時の基本成功確認
-async navigate(): Promise<void> {
-  await this.page.goto(this.url);
-  await expect(this.heroSection).toBeVisible({ timeout: 15000 }); // 基本確認
-}
+**A:** expect配置戦略のルールに従ってください。
 
-// ✅ テストファイル内: テスト固有の詳細検証
-test("ページタイトル検証", async ({ page }) => {
-  await playwrightPage.navigate(); // 基本確認済み
-  await expect(page).toHaveTitle(/Fast and reliable end-to-end testing/); // 詳細検証
-});
-```
+詳細なルールは **[🎯 expect-strategy.mdc](../../.cursor/rules/expect-strategy.mdc)** を参照してください。
 
-**詳細**: [expect-strategy.mdc](expect-strategy.mdc)
+For detailed rules, refer to **[🎯 expect-strategy.mdc](../../.cursor/rules/expect-strategy.mdc)**.
 
 ---
 
 ### Q2: Page Object内で`page.locator()`を直接使っても良い？
-**A:** 基本的に**避けるべき**です。アーキテクチャルールに従って設計してください：
 
-```typescript
-// ❌ 避けるべきパターン
-test("テスト", async ({ page }) => {
-  const element = page.locator("main"); // 直接使用
-  await expect(element).toBeVisible();
-});
+**A:** Page Object Modelのアーキテクチャルールに従ってください。
 
-// ✅ 推奨パターン
-test("テスト", async ({ page }) => {
-  const playwrightPage = new PlaywrightDevPage(page);
-  await playwrightPage.navigate(); // Page Objectメソッド使用
-  await playwrightPage.verifyMainElements(); // Page Objectで検証
-});
-```
+詳細なルールは **[🏗️ architecture.mdc](../../.cursor/rules/architecture.mdc#page-object-model必須--page-object-model-required)** を参照してください。
 
-**理由**: Page Object Modelによる責任分離・保守性・再利用性の向上
+For detailed rules, refer to **[🏗️ architecture.mdc](../../.cursor/rules/architecture.mdc#page-object-model必須--page-object-model-required)**.
 
 ---
 
 ### Q3: CSS セレクター (`.class`, `#id`) を使っても良い？
-**A:** **基本的に避ける**べきです。セレクター戦略の優先順位に従ってください：
 
-```typescript
-// ❌ 避けるべき（CSS依存）
-page.locator('.btn-primary')
-page.locator('#submit-button')
+**A:** セレクター戦略の優先順位に従ってください。
 
-// ✅ 推奨（セマンティック・安定）
-page.getByRole('button', { name: 'Submit' })
-page.getByLabel('Password')
-page.getByText('Save')
-```
+詳細なセレクター戦略は **[🎯 selectors.mdc](../../.cursor/rules/selectors.mdc)** を参照してください。
 
-**優先順位**: Role-based → Text-based → Label-based → 属性セレクター → CSS（最終手段）
-
-**詳細**: [selectors.mdc](selectors.mdc)
+For detailed selector strategy, refer to **[🎯 selectors.mdc](../../.cursor/rules/selectors.mdc)**.
 
 ---
 
@@ -129,40 +100,12 @@ TEST_PASSWORD=dummy-password-for-demo
 ## 実装・開発 / Implementation & Development
 
 ### Q7: 新しいPage Objectを作成する際の手順は？
-**A:** 以下の手順に従ってください：
 
-```typescript
-// 1. BasePage を継承
-export class NewPage extends BasePage {
-  readonly url = "https://example.com";
-  
-  // 2. セレクター戦略に従った要素定義
-  readonly submitButton: Locator;
-  
-  constructor(page: Page) {
-    super(page);
-    // 3. Role-based セレクターを優先
-    this.submitButton = this.page.getByRole('button', { name: 'Submit' });
-  }
-  
-  // 4. アクションメソッドに基本成功確認を含む
-  async submit(): Promise<void> {
-    try {
-      await this.submitButton.click();
-      await expect(this.page).toHaveURL(/success/); // 基本確認
-    } catch (error) {
-      await this.handleError(`送信に失敗: ${error}`);
-      throw error;
-    }
-  }
-}
-```
+**A:** Page Object作成の実装ガイドを参照してください。
 
-**チェックリスト**:
-- [ ] BasePage継承
-- [ ] セレクター戦略遵守
-- [ ] アクションメソッドに基本確認
-- [ ] エラーハンドリング実装
+詳細な作成手順は **[implementation-guide.md](implementation-guide.md#新規page-object作成手順)** を参照してください。
+
+For detailed creation steps, refer to **[implementation-guide.md](implementation-guide.md#新規page-object作成手順)**.
 
 ---
 

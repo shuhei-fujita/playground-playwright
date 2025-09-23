@@ -1,0 +1,276 @@
+---
+description: Logging system rules / ログシステムルール
+globs:
+- "tests/**/*.ts"
+- "tests/**/*.js"
+alwaysApply: true
+---
+
+# ログシステムルール / Logging System Rules
+
+## 📊 基本原則 / Basic Principles
+
+### ✅ **必須遵守事項 / Mandatory Requirements**
+
+**🔒 セキュリティ第一 / Security First**
+- 機密データの自動マスキング必須 / Automatic sensitive data masking required
+- パスワード・トークン・個人情報のログ出力禁止 / Prohibited: passwords, tokens, personal info in logs
+- 本番環境では `sensitiveDataMasking: true` 必須 / Production requires `sensitiveDataMasking: true`
+
+**📈 ログレベル厳守 / Strict Log Level Usage**
+- TRACE: 詳細デバッグ（開発時のみ） / Detailed debugging (development only)
+- DEBUG: デバッグ情報（開発・テスト環境） / Debug info (dev/test environments)
+- INFO: 重要な情報（全環境） / Important information (all environments)
+- WARN: 警告（全環境） / Warnings (all environments)
+- ERROR: エラー（全環境） / Errors (all environments)
+- FATAL: 致命的エラー（全環境） / Fatal errors (all environments)
+
+**🎯 カテゴリ分類必須 / Category Classification Required**
+```typescript
+// ✅ 必須：適切なカテゴリ指定
+logger.info('テスト開始', LogCategory.TEST_EXECUTION);
+logger.error('例外発生', LogCategory.ERROR_HANDLING, context, error);
+
+// ❌ 禁止：カテゴリ省略
+logger.info('テスト開始'); // カテゴリなし
+```
+
+## 🏗️ テスト統合ルール / Test Integration Rules
+
+### **Given-When-Thenパターン統合 / GWT Pattern Integration**
+
+**✅ 必須パターン / Required Pattern**
+```typescript
+test('テスト名', async ({ page, logManager }, testInfo) => {
+  try {
+    // テスト開始ログ必須 / Test start log required
+    logManager.startTest(testInfo.title);
+    
+    // === GIVEN ===
+    logManager.info('=== GIVEN: 前提条件 ===', LogCategory.TEST_EXECUTION);
+    
+    // === WHEN ===
+    logManager.info('=== WHEN: 操作実行 ===', LogCategory.TEST_EXECUTION);
+    
+    // === THEN ===
+    logManager.info('=== THEN: 結果検証 ===', LogCategory.TEST_EXECUTION);
+    
+    // テスト終了ログ必須 / Test end log required
+    logManager.endTest(testInfo.title, 'passed');
+    
+  } catch (error) {
+    // エラーハンドリング必須 / Error handling required
+    logManager.error('テスト失敗', LogCategory.ERROR_HANDLING, {}, error);
+    logManager.endTest(testInfo.title, 'failed');
+    throw error;
+  }
+});
+```
+
+### **Page Object統合ルール / Page Object Integration Rules**
+
+**✅ BasePage継承クラスでのログ使用 / Log Usage in BasePage Inheritance**
+```typescript
+export class XXXPage extends BasePage {
+  constructor(page: Page, logManager?: LogManager) {
+    super(page);
+    this.logManager = logManager;
+  }
+  
+  async navigate(url: string): Promise<void> {
+    // ページ操作ログ必須 / Page operation log required
+    this.logManager?.info(`ページ移動: ${url}`, LogCategory.PAGE_INTERACTION);
+    
+    // パフォーマンス測定推奨 / Performance measurement recommended
+    const startTime = Date.now();
+    await this.page.goto(url);
+    const duration = Date.now() - startTime;
+    
+    this.logManager?.performance('ページロード', { duration });
+  }
+}
+```
+
+## 🚫 禁止事項 / Prohibited Practices
+
+### **❌ 絶対禁止 / Absolutely Prohibited**
+
+**🔒 機密情報のログ出力 / Sensitive Information Logging**
+```typescript
+// ❌ 禁止例
+logger.info(`パスワード: ${password}`);
+logger.debug(`APIキー: ${apiKey}`);
+logger.error(`ユーザーデータ: ${JSON.stringify(userData)}`);
+```
+
+**⚡ 同期的ログ処理 / Synchronous Log Processing**
+```typescript
+// ❌ 禁止：awaitの乱用
+await logger.info('軽微な操作');
+await logger.debug('デバッグ情報');
+
+// ✅ 推奨：非同期処理活用
+logger.info('軽微な操作'); // await不要
+await logger.flush(); // 必要時のみ明示的フラッシュ
+```
+
+**🎯 不適切なログレベル / Inappropriate Log Levels**
+```typescript
+// ❌ 禁止例
+logger.error('テスト開始'); // エラーレベルの誤用
+logger.debug('重要な結果'); // 重要情報をデバッグレベルに
+logger.fatal('軽微な警告'); // 致命的レベルの誤用
+```
+
+## ⚡ パフォーマンスルール / Performance Rules
+
+### **必須最適化 / Mandatory Optimizations**
+
+**🔄 バッファリング活用 / Utilize Buffering**
+- 頻繁なログ出力時はバッファリング活用必須 / Buffering required for frequent logging
+- `logger.flush()` は必要時のみ使用 / Use `logger.flush()` only when necessary
+- テスト終了時の `await logger.close()` 必須 / `await logger.close()` required at test end
+
+**📊 環境別最適化 / Environment-Specific Optimization**
+```typescript
+// 開発環境 / Development
+{
+  level: LogLevel.DEBUG,
+  enableConsole: true,    // 即座確認
+  enableMetrics: false    // オーバーヘッド削減
+}
+
+// 本番環境 / Production  
+{
+  level: LogLevel.WARN,   // 重要ログのみ
+  enableConsole: false,   // パフォーマンス優先
+  enableMetrics: true     // 完全監視
+}
+```
+
+**🚨 アンチパターン / Anti-patterns**
+```typescript
+// ❌ 禁止：無駄な文字列生成
+logger.debug(`処理中... ${Math.random()}`);
+
+// ❌ 禁止：重いオブジェクト変換
+logger.info(`大量データ: ${JSON.stringify(hugeObject)}`);
+
+// ✅ 推奨：条件付きログ
+if (logger.getConfig().level <= LogLevel.DEBUG) {
+  logger.debug(`詳細情報: ${expensiveOperation()}`);
+}
+```
+
+## 🔧 環境別設定ルール / Environment Configuration Rules
+
+### **環境別必須設定 / Mandatory Environment Settings**
+
+| 環境 / Environment | ログレベル / Level | 必須Emitter / Required Emitters | 禁止事項 / Prohibited                            |
+| ------------------ | ------------------ | ------------------------------- | ------------------------------------------------ |
+| **Development**    | DEBUG以上 / DEBUG+ | Console + File                  | 機密データ平文出力 / Plain sensitive data        |
+| **Test**           | INFO以上 / INFO+   | Console のみ                    | File出力（速度優先） / File output (speed first) |
+| **Staging**        | INFO以上 / INFO+   | File + Structured + Metrics     | Console出力 / Console output                     |
+| **Production**     | WARN以上 / WARN+   | File + Structured + Metrics     | デバッグ情報 / Debug information                 |
+
+### **環境変数制御ルール / Environment Variable Control Rules**
+
+**✅ 必須環境変数 / Required Environment Variables**
+```bash
+# 基本設定 / Basic configuration
+LOG_LEVEL=INFO
+LOG_CONSOLE=true
+LOG_FILE=true
+
+# セキュリティ設定 / Security configuration  
+SENSITIVE_DATA_MASKING=true
+
+# 本番環境追加設定 / Additional production settings
+LOG_STRUCTURED=true
+LOG_METRICS=true
+```
+
+## 🎯 品質基準 / Quality Standards
+
+### **Level 1: 必須品質基準 / Critical Quality Standards**
+
+- [ ] **セキュリティ**: 機密データマスキング有効化 / Sensitive data masking enabled
+- [ ] **ログレベル**: 適切なレベル使用 / Appropriate level usage
+- [ ] **カテゴリ**: 全ログにカテゴリ指定 / Category specified for all logs
+- [ ] **エラーハンドリング**: try-catch内でのエラーログ / Error logs in try-catch
+
+### **Level 2: 推奨品質基準 / Recommended Quality Standards**
+
+- [ ] **Given-When-Then**: 構造化ログマーカー使用 / Use structured log markers
+- [ ] **パフォーマンス**: 重要操作の測定 / Measure important operations
+- [ ] **コンテキスト**: 詳細なコンテキスト情報 / Detailed context information
+- [ ] **テストライフサイクル**: startTest/endTest使用 / Use startTest/endTest
+
+### **Level 3: 高品質基準 / High Quality Standards**
+
+- [ ] **自動監視**: メトリクス収集有効化 / Enable metrics collection
+- [ ] **トレンド分析**: 長期的パフォーマンス追跡 / Long-term performance tracking
+- [ ] **アラート**: 閾値ベース通知設定 / Threshold-based alert configuration
+
+## 🔍 実装チェックリスト / Implementation Checklist
+
+### **新規テスト作成時 / When Creating New Tests**
+
+1. **✅ Fixtures設定確認 / Check Fixtures Configuration**
+   ```typescript
+   // TestFixtures.tsでlogManager提供確認
+   test('テスト名', async ({ page, logManager }, testInfo) => {
+   ```
+
+2. **✅ テストライフサイクル実装 / Implement Test Lifecycle**
+   ```typescript
+   logManager.startTest(testInfo.title);
+   // ... テストロジック
+   logManager.endTest(testInfo.title, 'passed');
+   ```
+
+3. **✅ エラーハンドリング実装 / Implement Error Handling**
+   ```typescript
+   try {
+     // テストロジック
+   } catch (error) {
+     logManager.error('テスト失敗', LogCategory.ERROR_HANDLING, {}, error);
+     throw error;
+   }
+   ```
+
+### **Page Object拡張時 / When Extending Page Objects**
+
+1. **✅ LogManager統合 / Integrate LogManager**
+   ```typescript
+   constructor(page: Page, logManager?: LogManager) {
+     super(page);
+     this.logManager = logManager;
+   }
+   ```
+
+2. **✅ 操作ログ追加 / Add Operation Logs**
+   ```typescript
+   async navigate(url: string): Promise<void> {
+     this.logManager?.info(`ページ移動: ${url}`, LogCategory.PAGE_INTERACTION);
+     await this.page.goto(url);
+   }
+   ```
+
+## 📚 参考資料 / Reference Materials
+
+### **詳細仕様 / Detailed Specifications**
+- **アーキテクチャ設計**: [docs/logging/log-architecture.md](../docs/logging/log-architecture.md)
+- **実装ガイド**: [docs/logging/implementation-guide.md](../docs/logging/implementation-guide.md)
+- **API仕様**: [tests/utils/logging/README.md](../tests/utils/logging/README.md)
+
+### **関連ルール / Related Rules**
+- **セキュリティ**: [security.mdc](security.mdc)
+- **テスト構造**: [test-structure.mdc](test-structure.mdc)
+- **品質基準**: [quality.mdc](quality.mdc)
+
+---
+
+**📝 ルール更新履歴 / Rule Update History**
+- v1.0.0: 初期ログルール作成 (2025-01-23) / Initial logging rules creation
+- 最終更新 / Last updated: 2025-01-23
