@@ -1,0 +1,197 @@
+---
+description: Development efficiency and cost optimization rules / 開発効率・コスト最適化ルール
+globs:
+alwaysApply: true
+---
+
+# 開発効率・コスト最適化ルール / Development Efficiency & Cost Optimization Rules
+
+## 🎯 基本原則 / Basic Principles
+
+### **トークン効率最優先 / Token Efficiency First**
+- **コマンド実行 > ツール呼び出し** / Command execution > Tool calls
+- **結果のみ取得 > 全体読み込み** / Results only > Full content reading
+- **並列実行 > 逐次実行** / Parallel execution > Sequential execution
+
+### **コスト最適化指標 / Cost Optimization Metrics**
+- 1回のコマンド実行 ≈ 10-50トークン
+- 1回のread_file ≈ 100-1000トークン
+- 1回のcodebase_search ≈ 500-2000トークン
+
+## ✅ **必須使用：コマンド実行** / Mandatory: Command Execution
+
+### **ファイル操作・検索 / File Operations & Search**
+```bash
+# ファイル数・サイズ確認
+find tests -name "*.ts" | wc -l
+du -sh tests/ playwright-report/
+ls -la tests/pages/
+
+# テキスト検索・パターンマッチ
+grep -r "export interface" tests/ --include="*.ts"
+grep -c "TODO" tests/**/*.ts
+grep -l "process.env" tests/**/*.ts
+```
+
+### **コード品質・検証 / Code Quality & Verification**
+```bash
+# TypeScript型チェック
+npx tsc --noEmit
+
+# テスト実行
+npm test
+npm run test:ci
+
+# 依存関係チェック
+npm audit
+npm outdated
+```
+
+### **統計・集計 / Statistics & Aggregation**
+```bash
+# 重複検出
+grep -r "https://" tests/ | sort | uniq -c | sort -nr
+find . -name "*.ts" -exec basename {} \; | sort | uniq -c | sort -nr
+
+# 行数・複雑度
+wc -l tests/**/*.ts | sort -nr
+```
+
+## ❌ **避けるべき非効率パターン** / Inefficient Patterns to Avoid
+
+### **トークン浪費パターン / Token Wasting Patterns**
+```typescript
+// ❌ 非効率：複数ファイル読み込み
+read_file("file1.ts")
+read_file("file2.ts") 
+read_file("file3.ts")
+
+// ✅ 効率的：一括検索
+grep -r "pattern" tests/ --include="*.ts"
+```
+
+### **大量データ取得の回避 / Avoid Large Data Retrieval**
+```typescript
+// ❌ 非効率：全内容取得
+codebase_search("すべてのimport文を見たい")
+
+// ✅ 効率的：必要な情報のみ
+grep -c "^import" tests/**/*.ts
+```
+
+## 🚀 **効率化戦略 / Efficiency Strategies**
+
+### **情報収集の優先順位 / Information Gathering Priority**
+
+1. **Level 1: コマンド実行**（最高効率）
+   - 件数、サイズ、存在確認
+   - パターンマッチング
+   - 統計・集計
+
+2. **Level 2: grep/find**（高効率）
+   - 特定パターンの検索
+   - ファイル名・パス検索
+   - 行数・文字数カウント
+
+3. **Level 3: read_file**（中効率）
+   - 特定ファイルの内容確認
+   - 最小限のファイル数に限定
+
+4. **Level 4: codebase_search**（低効率）
+   - セマンティック検索が必要な場合のみ
+   - 最後の手段として使用
+
+### **並列実行の活用 / Parallel Execution Usage**
+```bash
+# ✅ 推奨：複数情報を並列取得
+find tests -name "*.ts" | wc -l & \
+du -sh tests/ & \
+grep -c "export" tests/**/*.ts &
+wait
+```
+
+## 🎯 **コスト削減テクニック / Cost Reduction Techniques**
+
+### **検索結果の絞り込み / Search Result Filtering**
+```bash
+# 件数のみ取得
+grep -c "pattern" tests/**/*.ts
+
+# 上位N件のみ
+grep -r "pattern" tests/ | head -10
+
+# ファイル名のみ
+grep -l "pattern" tests/**/*.ts
+```
+
+### **条件分岐による最適化 / Conditional Optimization**
+```bash
+# 存在確認してから詳細調査
+if grep -q "target_pattern" tests/**/*.ts; then
+    grep -n "target_pattern" tests/**/*.ts
+fi
+```
+
+### **キャッシュ活用 / Cache Utilization**
+```bash
+# 結果をファイルに保存して再利用
+find tests -name "*.ts" > /tmp/ts_files.txt
+wc -l < /tmp/ts_files.txt
+```
+
+## 📊 **効率化メトリクス / Efficiency Metrics**
+
+### **トークン使用量比較 / Token Usage Comparison**
+
+| 操作 / Operation | 従来方法 / Traditional | 最適化後 / Optimized      | 削減率 / Reduction |
+| ---------------- | ---------------------- | ------------------------- | ------------------ |
+| ファイル数確認   | read_file × 複数       | `find \| wc -l`           | **90%削減**        |
+| パターン検索     | codebase_search        | `grep -r`                 | **80%削減**        |
+| 型定義調査       | read_file × 全ファイル | `grep "export interface"` | **95%削減**        |
+| サイズ確認       | list_dir + 計算        | `du -sh`                  | **85%削減**        |
+
+### **パフォーマンス指標 / Performance Indicators**
+- **目標**: 1操作あたり平均50トークン以下
+- **現実的**: コマンド実行率80%以上
+- **許容**: read_fileは1回につき3ファイル以下
+
+## ⚡ **実践ガイドライン / Practical Guidelines**
+
+### **開発フロー最適化 / Development Flow Optimization**
+
+1. **調査フェーズ**：コマンド実行で概要把握
+2. **分析フェーズ**：grep/findで詳細特定
+3. **実装フェーズ**：必要最小限のread_file
+4. **検証フェーズ**：コマンド実行で確認
+
+### **緊急時の効率化 / Emergency Efficiency**
+```bash
+# 最速問題特定
+npx tsc --noEmit 2>&1 | head -5
+grep -r "ERROR\|WARN" tests/ | wc -l
+find tests -name "*.ts" -newer file.ts
+```
+
+## 🛡️ **品質保持との両立 / Balance with Quality Assurance**
+
+### **効率化と安全性 / Efficiency vs Safety**
+- コマンド実行後は必ず結果を検証
+- 重要な変更前は段階的確認
+- エラー発生時は詳細調査に切り替え
+
+### **チーム開発での共有 / Team Development Sharing**
+- 効率的コマンドはチーム共有
+- 新人向けのコマンド集を整備
+- レビュー時も効率的手法を優先
+
+---
+
+## 📚 **関連リソース / Related Resources**
+
+- **コマンドリファレンス**: [Unix/Linux コマンド集](commands.md)
+- **grep活用法**: [正規表現パターン集](regex-patterns.md)
+- **パフォーマンス計測**: [トークン使用量分析](token-analysis.md)
+
+**最終更新 / Last Updated**: 2025-01-24
+**適用範囲 / Scope**: 全プロジェクト / All Projects
+**重要度 / Priority**: ⭐⭐⭐ (最高 / Highest)
