@@ -38,14 +38,12 @@ test("Playwright.devページのタイトルが正しく表示されること", 
     await playwrightPage.navigate();
 
     // === WHEN: テスト対象の操作実行 ===
-    // ページタイトルの取得
-    const title = await page.title();
+    // Page Objectメソッドを使用（POMパターン準拠）
+    await playwrightPage.verifyPageTitle();
 
     // === THEN: 期待結果の検証 ===
-    // タイトルにPlaywrightが含まれることを確認（主要アサーション）
-    await expect(page).toHaveTitle(/Playwright/);
-
-    console.log(`✅ ページタイトル検証が完了: ${title}`);
+    // Page Object内で検証が完了（POMパターンによる実装の一貫性）
+    console.log("✅ ページタイトル検証が完了しました");
   } catch (error) {
     await playwrightPage.handleError(`タイトル検証でエラーが発生: ${error}`);
     throw error;
@@ -60,13 +58,11 @@ test("Playwright.devページのメイン要素が表示されること", async 
     await playwrightPage.navigate();
 
     // === WHEN: テスト対象の操作実行 ===
-    // メイン要素の確認
-    const mainElement = page.locator("main");
+    // Page Objectメソッドを使用（POMパターン準拠）
+    await playwrightPage.verifyMainElements();
 
     // === THEN: 期待結果の検証 ===
-    // メイン要素が表示されていることを確認（主要アサーション）
-    await expect(mainElement).toBeVisible();
-
+    // Page Object内で検証が完了（POMパターンによる実装の一貫性）
     console.log("✅ メイン要素の表示確認が完了しました");
   } catch (error) {
     await playwrightPage.handleError(`要素表示確認でエラーが発生: ${error}`);
